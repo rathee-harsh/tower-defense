@@ -31,8 +31,8 @@ class TopBar(levelProgress: Double) extends Panel:
 
 class mainMap extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
-    val heightOfSquare = (HEIGHT - 120)/8
-    val widthOfSquare = WIDTH/20
+    val heightOfSquare = (HEIGHT - 110).toDouble/8
+    val widthOfSquare = WIDTH.toDouble/20
     val offset = 0
 
     val image = ImageIO.read(new File("assets/tree.png"))
@@ -45,32 +45,27 @@ class mainMap extends Panel:
 
     for i <- 0 until 7 do
       for j <- 0 until 20 do
-        g.drawImage(imageMap(testMap(i)(j)), j * widthOfSquare, offset + i * heightOfSquare , widthOfSquare, heightOfSquare, null)
+        g.drawImage(imageMap(testMap(i)(j)), j * widthOfSquare.toInt, offset + (i * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
 
 
-class TowerPanel() extends Panel:
+class BottomPanel(towerStatus: Buffer[Int]) extends Panel:
   override def paintComponent(g : Graphics2D) =
-    val image = ImageIO.read(new File("assets/lockedItem.png"))
-    g.drawImage(image, 0, 0, 100, 100, null)
-end TowerPanel
-
-
-class StatusPanel() extends Panel:
-  override def paintComponent(g : Graphics2D) =
-    val img = ImageIO.read(new File("assets/test.png") )
-    g.drawImage(img, 0, 15, 200, 70, null)
+    g.setColor(Color.gray)
+    g.fillRect(0, 0, WIDTH, 100)
 
     val health = ImageIO.read(new File("assets/health.png"))
-    g.drawImage(health, 5, 20, 20, 20, null)
+    g.drawImage(health, 5, 5, 30, 30, null)
     g.setColor(Color.red)
-    g.fillRect(30, 25, 100, 8)
+    g.fillRect(40, 15, 170, 14)
 
     val coins = ImageIO.read(new File("assets/coins.png"))
-    g.drawImage(coins, 5, 50, 25, 25, null)
+    g.drawImage(coins, 5, 30, 35, 35, null)
     g.setColor(Color.yellow)
-    g.drawString("550", 40, 67)
-
-end StatusPanel
+    g.drawString("550", 50, 47)
+    val image = ImageIO.read(new File("assets/lockedItem.png"))
+    for i <- towerStatus.indices do
+      g.drawImage(image, 250 + i * 100, -17, 100, 100, null)
+end BottomPanel
 
 
 object AppGUI extends SimpleSwingApplication:
@@ -87,13 +82,11 @@ object AppGUI extends SimpleSwingApplication:
         testMap(i)(j) = 0
   end for
 
-  val spell = new TowerPanel
-  val towers= Buffer[TowerPanel](new TowerPanel, new TowerPanel, new TowerPanel, new TowerPanel)
 
-  val status = new StatusPanel
-  val towersAndSpells = BoxPanel(Orientation.Horizontal)
-  towersAndSpells.contents ++= towers
-  towersAndSpells.contents += spell
+
+  val bottomMenu = new BottomPanel(Buffer.fill(5)(0))
+  bottomMenu.minimumSize = Dimension(WIDTH * 100, 4000)
+  bottomMenu.maximumSize = Dimension(WIDTH * 100, 4000)
 
   val topBar = new TopBar(0.5):
     maximumSize = Dimension(WIDTH, 3350)
@@ -102,11 +95,6 @@ object AppGUI extends SimpleSwingApplication:
 
   val mainGame = new mainMap()
 
-  val bottomMenu = BoxPanel(Orientation.Horizontal)
-  bottomMenu.maximumSize = Dimension(WIDTH, 4000)
-  bottomMenu.minimumSize = Dimension(WIDTH, 4000)
-  bottomMenu.contents += status
-  bottomMenu.contents += towersAndSpells
 
   val root = BoxPanel(Orientation.Vertical)
   root.contents += topBar
