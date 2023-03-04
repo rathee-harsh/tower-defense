@@ -8,6 +8,19 @@ import javax.imageio.ImageIO
 import scala.collection.mutable.Buffer
 import java.io.File
 
+ val WIDTH = 1400
+ val HEIGHT = 900
+
+class TopBar(levelProgress: Double) extends Panel:
+  override def paintComponent(g: Graphics2D): Unit =
+    val levelBanner = ImageIO.read(new File("assets/level_banner.png"))
+    val enemy = ImageIO.read(new File("assets/enemy.png"))
+    g.drawImage( levelBanner, 0, 0, WIDTH, 80, null)
+    g.setPaint(Color.black)
+    g.fillRect(10, 30, WIDTH - 40, 10)
+    g.setPaint(Color.green)
+    g.fillRect(10, 30, 10 + ((WIDTH - 50) * levelProgress).toInt, 10)
+    g.drawImage( enemy, ((WIDTH - 50) * levelProgress).toInt, 20, 50, 50, null)
 
 class TowerPanel() extends Panel:
   override def paintComponent(g : Graphics2D) =
@@ -35,8 +48,6 @@ end StatusPanel
 
 
 object AppGUI extends SimpleSwingApplication:
-  val WIDTH = 900
-  val HEIGHT = 700
   val firstButton  = Button("Press me, please")( () )
   val secondButton = Button("No, press ME!")( () )
   val prompt = Label("Press one of the buttons.")
@@ -49,11 +60,15 @@ object AppGUI extends SimpleSwingApplication:
   towersAndSpells.contents ++= towers
   towersAndSpells.contents += spell
 
+  val topBar = BoxPanel(Orientation.Horizontal)
+  topBar.contents += new TopBar(0.5)
+
   val bottomMenu = BoxPanel(Orientation.Horizontal)
   bottomMenu.contents += status
   bottomMenu.contents += towersAndSpells
 
   val root = BoxPanel(Orientation.Vertical)
+  root.contents += topBar
   root.contents += prompt
   root.contents += bottomMenu
 
