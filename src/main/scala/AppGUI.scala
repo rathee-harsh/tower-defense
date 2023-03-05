@@ -7,6 +7,8 @@ import java.awt.Dimension
 import javax.imageio.ImageIO
 import scala.collection.mutable.Buffer
 import java.io.File
+import scala.swing.event.*
+import java.awt.event.*
 
  val WIDTH = 1400
  val HEIGHT = 900
@@ -97,6 +99,12 @@ object AppGUI extends SimpleSwingApplication:
     add(topBar,BorderPanel.Position.North)
     add(mainGame,BorderPanel.Position.Center)
     add(bottomMenu,BorderPanel.Position.South)
+    focusable = true
+    listenTo(this.keys)
+    reactions += {
+      case KeyPressed(_,  Key.P, _, _) =>
+        println("HI")
+    }
 
 
 
@@ -106,6 +114,8 @@ object AppGUI extends SimpleSwingApplication:
     contents = root
     size = new Dimension(WIDTH, HEIGHT)
     resizable = false
+
+
 
 
   def top = this.gameWindow
