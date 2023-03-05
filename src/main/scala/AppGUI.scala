@@ -1,6 +1,5 @@
 import scala.swing.*
-import javax.swing.JFrame
-import javax.swing.JPanel
+import javax.swing.{BoxLayout, JFrame, JPanel}
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Graphics
@@ -22,7 +21,7 @@ class TopBar(levelProgress: Double) extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
     val levelBanner = ImageIO.read(new File("assets/level_banner.png"))
     val enemy = ImageIO.read(new File("assets/enemy.png"))
-    g.drawImage( levelBanner, 0, 0, WIDTH, 80, null)
+    g.drawImage( levelBanner, 0, 0, WIDTH, 100, null)
     g.setPaint(Color.black)
     g.fillRect(10, 30, WIDTH - 20, 10)
     g.setPaint(Color.green)
@@ -31,10 +30,8 @@ class TopBar(levelProgress: Double) extends Panel:
 
 class mainMap extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
-    val heightOfSquare = (HEIGHT - 110).toDouble/8
+    val heightOfSquare = (HEIGHT - 200).toDouble/7
     val widthOfSquare = WIDTH.toDouble/20
-    val offset = 0
-
     val image = ImageIO.read(new File("assets/tree.png"))
 
     val imageMap = Map(
@@ -45,13 +42,14 @@ class mainMap extends Panel:
 
     for i <- 0 until 7 do
       for j <- 0 until 20 do
-        g.drawImage(imageMap(testMap(i)(j)), j * widthOfSquare.toInt, offset + (i * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
+        g.drawImage(imageMap(testMap(i)(j)), (j * widthOfSquare).toInt, (i * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
+        println(i * heightOfSquare)
 
 
 class BottomPanel(towerStatus: Buffer[Int]) extends Panel:
   override def paintComponent(g : Graphics2D) =
     g.setColor(Color.gray)
-    g.fillRect(0, 0, WIDTH, 100)
+    g.fillRect(0, 0, WIDTH, 60)
 
     val health = ImageIO.read(new File("assets/health.png"))
     g.drawImage(health, 5, 5, 30, 30, null)
@@ -64,7 +62,7 @@ class BottomPanel(towerStatus: Buffer[Int]) extends Panel:
     g.drawString("550", 50, 47)
     val image = ImageIO.read(new File("assets/lockedItem.png"))
     for i <- towerStatus.indices do
-      g.drawImage(image, 250 + i * 100, -17, 100, 100, null)
+      g.drawImage(image, 250 + i * 60, 0, 60, 60, null)
 end BottomPanel
 
 
@@ -85,21 +83,21 @@ object AppGUI extends SimpleSwingApplication:
 
 
   val bottomMenu = new BottomPanel(Buffer.fill(5)(0))
-  bottomMenu.minimumSize = Dimension(WIDTH * 100, 4000)
-  bottomMenu.maximumSize = Dimension(WIDTH * 100, 4000)
-
-  val topBar = new TopBar(0.5):
-    maximumSize = Dimension(WIDTH, 3350)
-    minimumSize = Dimension(WIDTH, 3350)
-
+  bottomMenu.preferredSize = Dimension(WIDTH, 60)
 
   val mainGame = new mainMap()
 
+  val topBar = new TopBar(0.5)
+  topBar.preferredSize = Dimension(WIDTH, 100)
 
-  val root = BoxPanel(Orientation.Vertical)
-  root.contents += topBar
-  root.contents += mainGame
-  root.contents += bottomMenu
+
+
+
+  val root = new BorderPanel:
+    add(topBar,BorderPanel.Position.North)
+    add(mainGame,BorderPanel.Position.Center)
+    add(bottomMenu,BorderPanel.Position.South)
+
 
 
 
