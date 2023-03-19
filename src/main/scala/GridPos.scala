@@ -1,10 +1,10 @@
-case class GridPos(val x: Int, val y: Int):
-  def moveX(moveBy: Int): GridPos =
-    GridPos(this.x + moveBy, this.y)
+case class GridPos(val x: Double, val y: Double):
+  def moveX(moveBy: Double): GridPos =
+    GridPos(round2Dec(this.x + moveBy), this.y)
 
-  def moveY(moveBy: Int): GridPos = GridPos(this.x, this.y + moveBy)
+  def moveY(moveBy: Double): GridPos = GridPos(this.x, round2Dec(this.y + moveBy))
 
-  def moveInDirection(direction: Direction, moveBy: Int): GridPos =
+  def moveInDirection(direction: Direction, moveBy: Double): GridPos =
     direction match
       case Direction.North  => moveY(-moveBy)
       case Direction.East   => moveX(moveBy)
@@ -21,3 +21,5 @@ end GridPos
 
 enum Direction:
   case North, East, South, West, NonDirectional
+
+def round2Dec(num: Double) = (num * 100).round.toDouble/100

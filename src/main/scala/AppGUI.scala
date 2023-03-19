@@ -15,7 +15,9 @@ import scala.collection.mutable.*
  val HEIGHT = 900
 
 val COLS = 20
-val ROWS = 7
+val ROWS = 10
+
+val gridStep = 0.1
 
 val testMap = Buffer.fill(COLS)(Buffer.fill(ROWS)("0"))
 
@@ -42,7 +44,7 @@ class mainMap(var enemyPositions: Map[GridPos, Int]) extends Panel:
     val imageMap = Map(
       0 -> ImageIO.read(new File("assets/tree.png")),
       1 -> ImageIO.read(new File("assets/placable.png")),
-      2 -> ImageIO.read(new File("assets/path.png"))
+      2 -> ImageIO.read(new File("assets/path.jpg"))
     )
 
     val enemy = ImageIO.read(new File("assets/enemy.png"))
@@ -51,9 +53,9 @@ class mainMap(var enemyPositions: Map[GridPos, Int]) extends Panel:
       for j <- 0 until ROWS do
         val img = imageMap(testMap(i)(j).split(",")(0).toInt)
         g.drawImage(img, (i * widthOfSquare).toInt, (j * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
-    for i <- 0 until COLS do
-      for j <- 0 until ROWS do
-        if enemyPositions.keys.toVector.contains(GridPos(i, j)) then
+    for i <- BigDecimal(0.0) to BigDecimal(COLS.toDouble) by gridStep do
+      for j <- BigDecimal(0.0) to BigDecimal(ROWS.toDouble) by gridStep do
+        if enemyPositions.keys.toVector.contains(GridPos(i.toDouble, j.toDouble)) then
           val xOff = (i * widthOfSquare + widthOfSquare/4).toInt
           val yOff = (j * heightOfSquare + heightOfSquare/4).toInt
           g.drawImage(enemy, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
@@ -86,7 +88,7 @@ object AppGUI extends SimpleSwingApplication:
   for i <- 0 until COLS do
     for j <- 0 until ROWS do
       if j == 3 && i != COLS - 1 && i != COLS - 2 then
-        testMap(i)(j) = "2,East"
+        testMap(i)(j) = "2"
       else if j == 2 || j == 4 || (j == 3 && (i == COLS - 1 || i == COLS - 2)) then
         testMap(i)(j) = "1"
       else
@@ -136,7 +138,7 @@ object AppGUI extends SimpleSwingApplication:
         bottomMenu.repaint()
 
 
-  val timer = new javax.swing.Timer(800, listener)
+  val timer = new javax.swing.Timer(200, listener)
   timer.start()
 
 end AppGUI

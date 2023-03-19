@@ -41,20 +41,18 @@ end Game
 
 
 def createGirdPosMap(arrMap: Buffer[Buffer[String]]) =
-  val gridMap = Map[GridPos, GridPos]()
+  val gridMap = Map[GridPos, Direction]()
   for i <- 0 until COLS do
     for j <- 0 until ROWS do
       val matchString = arrMap(i)(j)
       val matchSplit = matchString.split(",")
       val pos = GridPos(i, j)
-      if matchSplit.length == 1 then
-        gridMap(pos) = pos
-      else
+      if matchSplit.length == 2 then
         gridMap(pos) =  matchSplit(1).toLowerCase match
-          case "north"  => pos.moveInDirection(Direction.North, 1)
-          case "east"   => pos.moveInDirection(Direction.East, 1)
-          case "south"  => pos.moveInDirection(Direction.South, 1)
-          case "west"   => pos.moveInDirection(Direction.West, 1)
+          case "north"  => Direction.North
+          case "east"   => Direction.East
+          case "south"  => Direction.South
+          case "west"   => Direction.West
       end if
     end for
   end for
