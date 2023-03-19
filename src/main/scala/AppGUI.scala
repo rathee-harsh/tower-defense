@@ -9,15 +9,15 @@ import scala.collection.mutable.Buffer
 import java.io.File
 import scala.swing.event.*
 import java.awt.event.*
+import scala.collection.mutable.*
 
- val WIDTH = 1400
+ val WIDTH = 1200
  val HEIGHT = 900
 
-val testMap = Buffer.fill(8)(Buffer.fill(20)(0))
+val COLS = 20
+val ROWS = 7
 
-//80 -> h - 40
-//h - 120
-//0 -> W
+val testMap = Buffer.fill(COLS)(Buffer.fill(ROWS)("0"))
 
 class TopBar(levelProgress: Double) extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
@@ -29,11 +29,14 @@ class TopBar(levelProgress: Double) extends Panel:
     g.setPaint(Color.green)
     g.fillRect(10, 30, 10 + ((WIDTH - 50) * levelProgress).toInt, 10)
     g.drawImage( enemy, ((WIDTH - 50) * levelProgress).toInt, 20, 50, 50, null)
+end TopBar
 
-class mainMap extends Panel:
+
+
+class mainMap(var enemyPositions: Map[GridPos, Int]) extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
-    val heightOfSquare = (HEIGHT - 200).toDouble/7
-    val widthOfSquare = WIDTH.toDouble/20
+    val heightOfSquare = (HEIGHT - 200).toDouble/ROWS
+    val widthOfSquare = WIDTH.toDouble/COLS
     val image = ImageIO.read(new File("assets/tree.png"))
 
     val imageMap = Map(
@@ -42,10 +45,20 @@ class mainMap extends Panel:
       2 -> ImageIO.read(new File("assets/path.png"))
     )
 
-    for i <- 0 until 7 do
-      for j <- 0 until 20 do
-        g.drawImage(imageMap(testMap(i)(j)), (j * widthOfSquare).toInt, (i * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
-        println(i * heightOfSquare)
+    val enemy = ImageIO.read(new File("assets/enemy.png"))
+
+    for i <- 0 until COLS do
+      for j <- 0 until ROWS do
+        val img = imageMap(testMap(i)(j).split(",")(0).toInt)
+        g.drawImage(img, (i * widthOfSquare).toInt, (j * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
+    for i <- 0 until COLS do
+      for j <- 0 until ROWS do
+        if enemyPositions.keys.toVector.contains(GridPos(i, j)) then
+          val xOff = (i * widthOfSquare + widthOfSquare/4).toInt
+          val yOff = (j * heightOfSquare + heightOfSquare/4).toInt
+          g.drawImage(enemy, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
+
+end mainMap
 
 
 class BottomPanel(towerStatus: Buffer[Int]) extends Panel:
@@ -70,30 +83,27 @@ end BottomPanel
 
 object AppGUI extends SimpleSwingApplication:
 
-  for i <- 0 until 8 do
-    if i == 3 then
-      for j <- 0 until 20 do
-        testMap(i)(j) = 2
-    else if i == 2 || i == 4 then
-      for j <- 0 until 20 do
-        testMap(i)(j) = 1
-    else
-      for j <- 0 until 20 do
-        testMap(i)(j) = 0
+  for i <- 0 until COLS do
+    for j <- 0 until ROWS do
+      if j == 3 && i != COLS - 1 && i != COLS - 2 then
+        testMap(i)(j) = "2,East"
+      else if j == 2 || j == 4 || (j == 3 && (i == COLS - 1 || i == COLS - 2)) then
+        testMap(i)(j) = "1"
+      else
+        testMap(i)(j) = "0"
   end for
+
+  val game = Game(testMap)
 
 
 
   val bottomMenu = new BottomPanel(Buffer.fill(5)(0))
   bottomMenu.preferredSize = Dimension(WIDTH, 60)
 
-  val mainGame = new mainMap()
+  val mainGame = new mainMap(Map())
 
   val topBar = new TopBar(0.5)
   topBar.preferredSize = Dimension(WIDTH, 100)
-
-
-
 
   val root = new BorderPanel:
     add(topBar,BorderPanel.Position.North)
@@ -106,9 +116,6 @@ object AppGUI extends SimpleSwingApplication:
         println("HI")
     }
 
-
-
-
   val gameWindow = new MainFrame:
     title = "Level 1"
     contents = root
@@ -116,9 +123,21 @@ object AppGUI extends SimpleSwingApplication:
     resizable = false
 
 
-
-
   def top = this.gameWindow
+
+  game.addEnemy()
+
+  val listener = new ActionListener():
+      def actionPerformed(e: java.awt.event.ActionEvent) =
+        game.advance()
+        mainGame.enemyPositions = game.getEnemyLocations
+        topBar.repaint()
+        mainGame.repaint()
+        bottomMenu.repaint()
+
+
+  val timer = new javax.swing.Timer(800, listener)
+  timer.start()
 
 end AppGUI
 
