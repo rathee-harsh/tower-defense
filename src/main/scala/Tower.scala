@@ -1,35 +1,27 @@
 import scala.collection.mutable.Buffer
 
-trait Tower(val name: String, val image: String, val id: Int, val game: Game, startLevel: Int, startLocation: GridPos):
+trait Tower(val image: String, val game: Game, startLevel: Int, startLocation: GridPos):
   var currentLevel: Int = 1
 
-  var location: GridPos = startLocation
+  private var currentLocation: GridPos = startLocation
   private var level = startLevel
 
   def upgrade(): Unit = this.level += 1
+
   def takeTurn(): Unit
+
+  def move(newLocation: GridPos) = this.currentLocation = newLocation
+  def location = this.currentLocation
 end Tower
 
-trait Active extends Tower:
-  val enemiesInRange: Buffer[Enemy]
-end Active
-
-trait Passive extends Tower
-
-
-class Melee(name: String, image: String, id: Int, game: Game, startLevel: Int = 1, startLocation: GridPos) extends Active with Tower(name, image, id, game, startLevel, startLocation):
+class Ranged(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction)
+  extends Tower(image, game, startLevel, startLocation):
   val enemiesInRange: Buffer[Enemy] = Buffer()
 
-  def takeTurn(): Unit = ???
-end Melee
-
-class Ranged(name: String, image: String, id: Int, game: Game, startLevel: Int = 1, startLocation: GridPos) extends Active with Tower(name, image, id, game, startLevel, startLocation):
-  val enemiesInRange: Buffer[Enemy] = Buffer()
-
-  def takeTurn(): Unit = ???
+  def takeTurn(): Unit = this.game.projectiles += new CannonBall("assets/cannon-ball.png", 10, this.location, this.directionFacing)
 end Ranged
 
-class Collector(name: String, image: String, id: Int, game: Game, startLevel: Int = 1, startLocation: GridPos) extends Passive with Tower(name, image, id, game, startLevel, startLocation):
+class Collector(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos) extends Tower(image, game, startLevel, startLocation):
   def takeTurn(): Unit = ???
 end Collector
 

@@ -2,38 +2,47 @@ import scala.collection.mutable.{Buffer, Map}
 
 class Game(val worldMap: Buffer[Buffer[String]]):
   var enemyCount = 0
+  var towerCount = 0
+
   val towers = Map[Int, Tower]()
   val enemies = Map[Int, Enemy]()
-  val towerLocations = Map[Int, GridPos]()
-  val enemyLocaitons = Map[Int, GridPos]()
+
+  val projectiles = Buffer[Projectile]()
   var totalResources: Double = 0
+
   private var gameWon = false
   private var gameLost = false
+
   val gridMap = createGirdPosMap(this.worldMap)
 
-  def addEnemy() =
-    val startingLocation = new GridPos(0, 3)
-    val enemy = new LandEnemy("Test", "assets/test.png", this, 100, 10, startingLocation)
-    enemies(enemyCount) = enemy
-    enemyLocaitons(enemyCount) = startingLocation
+  def addEnemy(enemy: Enemy) =
+    this.enemies(enemyCount) = enemy
     this.enemyCount += 1
+  end addEnemy
 
+  def addTower(tower: Tower) =
+    this.towers(towerCount) = tower
+    this.towerCount += 1
 
-  def upgrade(): Unit = ???
-  def attackEnemy(): Unit = ???
+  def upgrade(tower: Tower): Unit =
+    tower.upgrade()
+
   def advance(): Unit =
-    this.enemies.foreach(_._2.takeTurn())
-    this.updateEnemyLocations()
+    this.enemies.foreach(_._2.move())
+    this.towers.foreach(_._2.takeTurn())
 
-  def moveTower(id: Int, newLocation: GridPos) = ???
   def isOver: Boolean = this.gameWon || this.gameLost
 
-  def updateEnemyLocations(): Unit =
-    for id <- enemies.keys do
-      enemyLocaitons(id) = enemies(id).location
+  def updateTowerLocation(tower: Tower, newLocation: GridPos) =
+    tower.move(newLocation)
 
-  def getEnemyLocations: Map[GridPos, Int] =
-    this.enemyLocaitons.map( (count: Int, location: GridPos) => (location, enemies(count).enemyType) )
+
+
+  def getEnemyLocations: Map[GridPos, Enemy] =
+    this.enemies.map( (count: Int, enemy: Enemy) => (enemy.location, enemy) )
+
+  def getTowerLocations: Map[GridPos, Tower] =
+    this.towers.map( (count: Int, tower: Tower) => (tower.location, tower) )
 
 
 end Game

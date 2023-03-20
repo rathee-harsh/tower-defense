@@ -35,30 +35,54 @@ end TopBar
 
 
 
-class mainMap(var enemyPositions: Map[GridPos, Int]) extends Panel:
-  override def paintComponent(g: Graphics2D): Unit =
-    val heightOfSquare = (HEIGHT - 200).toDouble/ROWS
-    val widthOfSquare = WIDTH.toDouble/COLS
-    val image = ImageIO.read(new File("assets/tree.png"))
+class mainMap(game: Game) extends Panel:
 
+  val heightOfSquare = (HEIGHT - 200).toDouble/ROWS
+  val widthOfSquare = WIDTH.toDouble/COLS
+  val enemy = ImageIO.read(new File("assets/enemy.png"))
+
+  private def drawMap(g: Graphics2D): Unit =
     val imageMap = Map(
       0 -> ImageIO.read(new File("assets/tree.png")),
       1 -> ImageIO.read(new File("assets/placable.png")),
       2 -> ImageIO.read(new File("assets/path.jpg"))
     )
-
-    val enemy = ImageIO.read(new File("assets/enemy.png"))
-
     for i <- 0 until COLS do
       for j <- 0 until ROWS do
         val img = imageMap(testMap(i)(j).split(",")(0).toInt)
         g.drawImage(img, (i * widthOfSquare).toInt, (j * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
+  end drawMap
+
+  private def drawEnemies(g: Graphics2D): Unit =
     for i <- BigDecimal(0.0) to BigDecimal(COLS.toDouble) by gridStep do
       for j <- BigDecimal(0.0) to BigDecimal(ROWS.toDouble) by gridStep do
-        if enemyPositions.keys.toVector.contains(GridPos(i.toDouble, j.toDouble)) then
+        val pos = GridPos(i.toDouble, j.toDouble)
+        val enemies = game.getEnemyLocations
+        if enemies.keys.toVector.contains(pos) then
+          val image = ImageIO.read(new File(enemies(pos).image))
           val xOff = (i * widthOfSquare + widthOfSquare/4).toInt
           val yOff = (j * heightOfSquare + heightOfSquare/4).toInt
           g.drawImage(enemy, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
+    end for
+  end drawEnemies
+
+  private def drawTowers(g: Graphics2D): Unit =
+    val towers = game.getTowerLocations
+    for (location, tower) <- towers do
+      val image = ImageIO.read(new File(tower.image))
+      val xOff = (location.x * widthOfSquare + widthOfSquare/4).toInt
+      val yOff = (location.y * heightOfSquare + heightOfSquare/4).toInt
+      g.drawImage(image, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
+    end for
+  end drawTowers
+
+
+
+  override def paintComponent(g: Graphics2D): Unit =
+    this.drawMap(g)
+    this.drawEnemies(g)
+    this.drawTowers(g)
+  end paintComponent
 
 end mainMap
 
@@ -102,7 +126,7 @@ object AppGUI extends SimpleSwingApplication:
   val bottomMenu = new BottomPanel(Buffer.fill(5)(0))
   bottomMenu.preferredSize = Dimension(WIDTH, 60)
 
-  val mainGame = new mainMap(Map())
+  val mainGame = new mainMap(game)
 
   val topBar = new TopBar(0.5)
   topBar.preferredSize = Dimension(WIDTH, 100)
@@ -127,15 +151,17 @@ object AppGUI extends SimpleSwingApplication:
 
   def top = this.gameWindow
 
-  game.addEnemy()
+  game.addEnemy(new LandEnemy("Test", "assets/test.png", game, 100, 10, GridPos(0, 3)))
+  game.addTower(new Ranged("assets/cannon.png", game, 1, GridPos(10, 4), Direction.North))
 
   val listener = new ActionListener():
       def actionPerformed(e: java.awt.event.ActionEvent) =
         game.advance()
-        mainGame.enemyPositions = game.getEnemyLocations
         topBar.repaint()
         mainGame.repaint()
         bottomMenu.repaint()
+  end listener
+
 
 
   val timer = new javax.swing.Timer(200, listener)
