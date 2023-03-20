@@ -11,6 +11,7 @@ import scala.swing.event.*
 import java.awt.event.*
 import scala.collection.mutable.*
 
+
  val WIDTH = 1200
  val HEIGHT = 900
 
@@ -39,7 +40,12 @@ class mainMap(game: Game) extends Panel:
 
   val heightOfSquare = (HEIGHT - 200).toDouble/ROWS
   val widthOfSquare = WIDTH.toDouble/COLS
-  val enemy = ImageIO.read(new File("assets/enemy.png"))
+
+  private def drawTopEntities(g: Graphics2D, imagePath: String, location: GridPos) =
+    val image = ImageIO.read(new File(imagePath))
+    val xOff = (location.x * widthOfSquare + widthOfSquare/4).toInt
+    val yOff = (location.y * heightOfSquare + heightOfSquare/4).toInt
+    g.drawImage(image, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
 
   private def drawMap(g: Graphics2D): Unit =
     val imageMap = Map(
@@ -59,29 +65,28 @@ class mainMap(game: Game) extends Panel:
         val pos = GridPos(i.toDouble, j.toDouble)
         val enemies = game.getEnemyLocations
         if enemies.keys.toVector.contains(pos) then
-          val image = ImageIO.read(new File(enemies(pos).image))
-          val xOff = (i * widthOfSquare + widthOfSquare/4).toInt
-          val yOff = (j * heightOfSquare + heightOfSquare/4).toInt
-          g.drawImage(enemy, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
+          this.drawTopEntities(g, enemies(pos).image, pos)
     end for
   end drawEnemies
+
 
   private def drawTowers(g: Graphics2D): Unit =
     val towers = game.getTowerLocations
     for (location, tower) <- towers do
-      val image = ImageIO.read(new File(tower.image))
-      val xOff = (location.x * widthOfSquare + widthOfSquare/4).toInt
-      val yOff = (location.y * heightOfSquare + heightOfSquare/4).toInt
-      g.drawImage(image, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
+      this.drawTopEntities(g, tower.image, location)
     end for
   end drawTowers
 
-
+  private def drawProjectiles(g: Graphics2D): Unit =
+    for projectile <- game.projectiles do
+      this.drawTopEntities(g, projectile.image, projectile.location)
+  end drawProjectiles
 
   override def paintComponent(g: Graphics2D): Unit =
     this.drawMap(g)
     this.drawEnemies(g)
     this.drawTowers(g)
+    this.drawProjectiles(g)
   end paintComponent
 
 end mainMap
@@ -151,8 +156,8 @@ object AppGUI extends SimpleSwingApplication:
 
   def top = this.gameWindow
 
-  game.addEnemy(new LandEnemy("Test", "assets/test.png", game, 100, 10, GridPos(0, 3)))
-  game.addTower(new Ranged("assets/cannon.png", game, 1, GridPos(10, 4), Direction.North))
+  game.addEnemy(new LandEnemy("Test", "assets/enemy.png", game, 100, 10, GridPos(0, 3)))
+  game.addTower(new Ranged("assets/cannon.png", game, 1, GridPos(10, 4), Direction.North, 15))
 
   val listener = new ActionListener():
       def actionPerformed(e: java.awt.event.ActionEvent) =
@@ -160,6 +165,7 @@ object AppGUI extends SimpleSwingApplication:
         topBar.repaint()
         mainGame.repaint()
         bottomMenu.repaint()
+        game.removeUnwantedProjectiles()
   end listener
 
 

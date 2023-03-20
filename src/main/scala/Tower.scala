@@ -14,11 +14,19 @@ trait Tower(val image: String, val game: Game, startLevel: Int, startLocation: G
   def location = this.currentLocation
 end Tower
 
-class Ranged(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction)
+class Ranged(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction, waitBetweenShots: Int)
   extends Tower(image, game, startLevel, startLocation):
   val enemiesInRange: Buffer[Enemy] = Buffer()
 
-  def takeTurn(): Unit = this.game.projectiles += new CannonBall("assets/cannon-ball.png", 10, this.location, this.directionFacing)
+  private var waitCounter = 0
+
+  def takeTurn(): Unit =
+    if this.waitCounter == waitBetweenShots then
+      this.game.projectiles +=
+        new CannonBall("assets/cannon-ball.png", 10, this.location.moveInDirection(this.directionFacing, 0.5), this.directionFacing)
+      this.waitCounter = 0
+    else
+      this.waitCounter += 1
 end Ranged
 
 class Collector(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos) extends Tower(image, game, startLevel, startLocation):

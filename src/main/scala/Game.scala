@@ -27,9 +27,19 @@ class Game(val worldMap: Buffer[Buffer[String]]):
   def upgrade(tower: Tower): Unit =
     tower.upgrade()
 
+  def removeUnwantedProjectiles(): Unit =
+    val toRemove = Buffer[Projectile]()
+    for projectile <- projectiles do
+      if this.positionOutOfBounds(projectile.location) then
+        toRemove += projectile
+    toRemove.foreach(projectile => this.projectiles -= projectile)
+
   def advance(): Unit =
     this.enemies.foreach(_._2.move())
     this.towers.foreach(_._2.takeTurn())
+    this.projectiles.foreach(_.move())
+
+  def positionOutOfBounds(location: GridPos) = location.x < 0 || location.x > COLS || location.y < 0 || location.y > ROWS
 
   def isOver: Boolean = this.gameWon || this.gameLost
 
