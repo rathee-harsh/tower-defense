@@ -154,7 +154,7 @@ object AppGUI extends SimpleSwingApplication:
 
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
 
-  val game = Game(testMap)
+  val game = Game(testMap.map(_.toVector).toVector)
   val buttons = this.createButtons(towerButtons)
 
   val buttonPanel = new FlowPanel

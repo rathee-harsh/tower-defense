@@ -1,6 +1,6 @@
 import scala.collection.mutable.{Buffer, Map}
 
-class Game(val worldMap: Buffer[Buffer[String]]):
+class Game(val worldMap: Vector[Vector[String]]):
   var enemyCount = 0
   var towerCount = 0
 
@@ -68,7 +68,7 @@ end Game
 
 
 
-def createGirdPosMap(arrMap: Buffer[Buffer[String]]) =
+def createGirdPosMap(arrMap: Vector[Vector[String]]) =
   val gridMap = Map[GridPos, Direction]()
   for i <- 0 until COLS do
     for j <- 0 until ROWS do

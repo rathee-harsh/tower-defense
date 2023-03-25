@@ -1,4 +1,6 @@
-import java.io.{FileWriter, File}
+import java.io.{File, FileWriter}
+import scala.collection.mutable.Buffer
+import scala.io.Source
 
 val FILE_STORAGE_PATH = "assets/maps/"
 val GAME_FILE_IDENTIFIER = "Tower Defence Map-file"
@@ -32,5 +34,18 @@ object FileOperations:
       writeString = writeString.dropRight(1)
       fileWriter.write(writeString)
       fileWriter.close()
+  end saveMap
+
+  def loadMap(fileName: String): Vector[Vector[String]] =
+    val reader = Source.fromFile(FILE_STORAGE_PATH + fileName)
+    val gameMap: Buffer[Buffer[String]] = Buffer()
+    for line <- reader.getLines() do
+      val blocks = line.split(" ")
+      val rowBlocks = Buffer[String]()
+      for block <- blocks do
+        rowBlocks += block
+      gameMap += rowBlocks
+    gameMap.map(_.toVector).toVector
+
 
 end FileOperations
