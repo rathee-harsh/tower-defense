@@ -10,6 +10,7 @@ import java.io.File
 import scala.swing.event.*
 import java.awt.event.*
 import scala.collection.mutable.*
+import javax.swing.ImageIcon
 
 
  val WIDTH = 1200
@@ -95,7 +96,7 @@ class mainMap(game: Game) extends Panel:
 end mainMap
 
 
-class BottomPanel(game: Game, towerStatus: Buffer[String]) extends Panel:
+class BottomPanel(game: Game) extends BorderPanel:
   override def paintComponent(g : Graphics2D) =
     g.setColor(Color.gray)
     g.fillRect(0, 0, WIDTH, 60)
@@ -107,14 +108,32 @@ class BottomPanel(game: Game, towerStatus: Buffer[String]) extends Panel:
     g.setFont(new Font("TimesRoman", 3, 18))
     g.drawString(totalResources, 60, 35)
 
-
-    for i <- towerStatus.indices do
-      val image = ImageIO.read(new File(towerStatus(i)))
-      g.drawImage(image, 250 + i * 60, 0, 60, 60, null)
+//    val buttons = Buffer[Button]()
+//    for i <- towerStatus.indices do
+//      val image = ImageIO.read(new File(towerStatus(i)))
+//      buttons += new Button("") {
+//        icon = new ImageIcon(image)
+//        preferredSize = new Dimension(image.getWidth, image.getHeight)
+//      }
+//
+//    for i <- towerStatus.indices do
+//      val image = ImageIO.read(new File(towerStatus(i)))
+//      g.drawImage(image, 250 + i * 60, 0, 60, 60, null)
 end BottomPanel
 
 
 object AppGUI extends SimpleSwingApplication:
+
+  private def createButtons(imagePath: Buffer[String]) =
+    val buttons = Buffer[Button]()
+    for i <- imagePath do
+      val image = ImageIO.read(new File(i))
+      buttons += new Button("") {
+        println(i)
+        icon = new ImageIcon(image.getScaledInstance(50, 50, 2))
+        preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
+      }
+    buttons.toSeq
 
   for i <- 0 until COLS do
     for j <- 0 until ROWS do
@@ -128,10 +147,13 @@ object AppGUI extends SimpleSwingApplication:
 
   val game = Game(testMap)
 
+  val buttonPanel = new FlowPanel
+  buttonPanel.contents ++= this.createButtons(Buffer(CANNON_IMAGE_PATH, COLLECTOR_IMAGE_PATH))
 
-
-  val bottomMenu = new BottomPanel(game, Buffer(CANNON_IMAGE_PATH, COLLECTOR_IMAGE_PATH))
+  val bottomMenu = new BottomPanel(game):
+    layout(buttonPanel) = BorderPanel.Position.Center
   bottomMenu.preferredSize = Dimension(WIDTH, 60)
+
 
   val mainGame = new mainMap(game)
 
