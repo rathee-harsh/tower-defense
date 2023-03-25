@@ -121,6 +121,14 @@ end BottomPanel
 
 object AppGUI extends SimpleSwingApplication:
 
+  private def formGridCoordinates(point: Point): GridPos =
+    val x = point.getX
+    val y = point.getY
+    val relativeX = x
+    val relativeY = y - topBar.size.getHeight
+    GridPos(math.floor(relativeX/root.size.getWidth * COLS), math.floor(relativeY/mainGame.size.getHeight * ROWS))
+  end formGridCoordinates
+
   private def createButtons(towerButtons: Map[String, String]) =
     val buttons = Buffer[Button]()
     for (buttonName, imagePath) <- towerButtons do
@@ -135,11 +143,11 @@ object AppGUI extends SimpleSwingApplication:
   for i <- 0 until COLS do
     for j <- 0 until ROWS do
       if j == 3 && i != COLS - 1 && i != COLS - 2 then
-        testMap(i)(j) = "2"
+        testMap(i)(j) = "2,east"
       else if j == 2 || j == 4 || (j == 3 && (i == COLS - 1 || i == COLS - 2)) then
-        testMap(i)(j) = "1"
+        testMap(i)(j) = "1,placable"
       else
-        testMap(i)(j) = "0"
+        testMap(i)(j) = "0,forest"
   end for
 
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
@@ -164,8 +172,6 @@ object AppGUI extends SimpleSwingApplication:
   val topBar = new TopBar(0.5)
   topBar.preferredSize = Dimension(WIDTH, 100)
 
-  println(topBar.preferredSize)
-  println(bottomMenu.preferredSize)
 
   val root = new BorderPanel:
     add(topBar,BorderPanel.Position.North)
@@ -174,33 +180,43 @@ object AppGUI extends SimpleSwingApplication:
     focusable = true
     listenTo(this.keys)
     listenTo(this.mouse.moves)
+    listenTo(this.mouse.clicks)
     buttons.foreach( this.listenTo(_) )
     reactions += {
       case KeyPressed(_,  Key.P, _, _) =>
         println("HI")
       case MouseMoved(_, point, _) =>
-        val x = point.getX
-        val y = point.getY
-        val relativeX = x
-        val relativeY = y - topBar.size.getHeight
-
-        println(this.size.getHeight - bottomMenu.size.getHeight)
-
-        if y > topBar.size.getHeight && y < (this.size.getHeight - bottomMenu.size.getHeight) then
+        if point.getY > topBar.size.getHeight && point.getY < (this.size.getHeight - bottomMenu.size.getHeight) then
           PickedUpTower.cursorOnGame = true
-          PickedUpTower.location = GridPos(math.floor(relativeX/this.size.getWidth * COLS), math.floor(relativeY/mainGame.size.getHeight * ROWS))
-          println(PickedUpTower.location)
+          PickedUpTower.location = formGridCoordinates(point)
         else
           PickedUpTower.cursorOnGame = false
-//        println("(" + x + ", " +  y + ")")
+      case MouseClicked(component, point, _, _, _) =>
+        if PickedUpTower.tower.isDefined then
+          val location = formGridCoordinates(point)
+
+          game.gridMap.get(location) match
+            case Some(direction) if !game.getTowerLocations.contains(location) =>
+              if direction == Direction.Placable && !PickedUpTower.isCollector then
+                PickedUpTower.tower.get.move(location)
+                game.addTower(PickedUpTower.tower.get)
+                println(game.towers)
+              else if direction == Direction.Forest && PickedUpTower.isCollector then
+                PickedUpTower.tower.get.move(location)
+                game.addTower(PickedUpTower.tower.get)
+            case _ => ()
+          PickedUpTower.tower = None
+          PickedUpTower.cursorOnGame = false
+
+
       case buttonClicked: ButtonClicked =>
         buttonClicked.source.name match
           case "cannon" =>
             PickedUpTower.tower = Some(new Cannon( game, 1, GridPos(10, 4), Direction.North, 15))
-            println("cannon")
+            PickedUpTower.isCollector = false
           case "collector" =>
             PickedUpTower.tower = Some(new Collector(game, 1, GridPos(10, 4), 15))
-            println("collector")
+            PickedUpTower.isCollector = true
           case _ => ()
 
     }
@@ -240,6 +256,7 @@ object PickedUpTower:
   var cursorOnGame = false
   def toBeDrawn = cursorOnGame && this.tower.isDefined
   var location = GridPos(0, 0)
+  var isCollector = false
 end PickedUpTower
 
 

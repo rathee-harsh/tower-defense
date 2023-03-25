@@ -10,7 +10,7 @@ case class GridPos(val x: Double, val y: Double):
       case Direction.East   => moveX(moveBy)
       case Direction.South  => moveY(moveBy)
       case Direction.West   => moveX(-moveBy)
-      case Direction.NonDirectional => this
+      case _ => this
 
   override def toString: String = "(" + this.x + ", " + this.y + ")"
   override def equals(another: Any): Boolean  =
@@ -20,6 +20,6 @@ case class GridPos(val x: Double, val y: Double):
 end GridPos
 
 enum Direction:
-  case North, East, South, West, NonDirectional
+  case North, East, South, West, NonDirectional, Forest, Placable
 
 def round2Dec(num: Double) = (num * 100).round.toDouble/100

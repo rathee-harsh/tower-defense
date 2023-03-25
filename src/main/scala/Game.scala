@@ -15,6 +15,7 @@ class Game(val worldMap: Buffer[Buffer[String]]):
   private var gameLost = false
 
   val gridMap = createGirdPosMap(this.worldMap)
+  println(gridMap)
 
   def resources = this.totalResources
 
@@ -76,11 +77,12 @@ def createGirdPosMap(arrMap: Buffer[Buffer[String]]) =
       val pos = GridPos(i, j)
       if matchSplit.length == 2 then
         gridMap(pos) =  matchSplit(1).toLowerCase match
-          case "north"  => Direction.North
-          case "east"   => Direction.East
-          case "south"  => Direction.South
-          case "west"   => Direction.West
-      end if
+          case "north"    => Direction.North
+          case "east"     => Direction.East
+          case "south"    => Direction.South
+          case "west"     => Direction.West
+          case "forest"   => Direction.Forest
+          case "placable" => Direction.Placable
     end for
   end for
   gridMap
