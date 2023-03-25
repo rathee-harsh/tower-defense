@@ -96,7 +96,7 @@ class mainMap(game: Game) extends Panel:
 end mainMap
 
 
-class BottomPanel(game: Game) extends BorderPanel:
+class BottomPanel(game: Game) extends Panel:
   override def paintComponent(g : Graphics2D) =
     g.setColor(Color.gray)
     g.fillRect(0, 0, WIDTH, 60)
@@ -150,8 +150,12 @@ object AppGUI extends SimpleSwingApplication:
   val buttonPanel = new FlowPanel
   buttonPanel.contents ++= this.createButtons(Buffer(CANNON_IMAGE_PATH, COLLECTOR_IMAGE_PATH))
 
-  val bottomMenu = new BottomPanel(game):
-    layout(buttonPanel) = BorderPanel.Position.Center
+  val bottomLeft = new BottomPanel(game):
+    preferredSize = new Dimension(100, 400)
+
+  val bottomMenu = new BorderPanel:
+    layout(buttonPanel) = BorderPanel.Position.East
+    layout(bottomLeft) = BorderPanel.Position.West
   bottomMenu.preferredSize = Dimension(WIDTH, 60)
 
 
