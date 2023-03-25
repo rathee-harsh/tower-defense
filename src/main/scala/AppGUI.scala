@@ -150,6 +150,8 @@ object AppGUI extends SimpleSwingApplication:
         testMap(i)(j) = "0,forest"
   end for
 
+  FileOperations.saveMap(testMap.map(_.toVector).toVector, "test.txt")
+
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
 
   val game = Game(testMap)
