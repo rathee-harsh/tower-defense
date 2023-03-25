@@ -14,23 +14,21 @@ trait Tower(val image: String, val game: Game, startLevel: Int, startLocation: G
   def location = this.currentLocation
 end Tower
 
-class Ranged(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction, waitBetweenShots: Int)
-  extends Tower(image, game, startLevel, startLocation):
-  val enemiesInRange: Buffer[Enemy] = Buffer()
+class Cannon(game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction, waitBetweenShots: Int)
+  extends Tower(CANNON_IMAGE_PATH, game, startLevel, startLocation):
 
   private var waitCounter = 0
 
   def takeTurn(): Unit =
     if this.waitCounter == waitBetweenShots then
       this.game.projectiles +=
-        new CannonBall("assets/cannon-ball.png", 10, this.location.moveInDirection(this.directionFacing, 0.5), this.directionFacing)
+        new CannonBall("assets/cannon-ball.png", 10, this.location.moveInDirection(this.directionFacing, 0.5), this.game, this.directionFacing)
       this.waitCounter = 0
     else
       this.waitCounter += 1
-end Ranged
+end Cannon
 
-class Collector(image: String, game: Game, startLevel: Int = 1, startLocation: GridPos) extends Tower(image, game, startLevel, startLocation):
-  def takeTurn(): Unit = ???
+class Collector(game: Game, startLevel: Int = 1, startLocation: GridPos) extends Tower(COLLECTOR_IMAGE_PATH, game, startLevel, startLocation):
+  def takeTurn(): Unit =
+    this.game.resourcesToAdd += 10
 end Collector
-
-//class KingTower(game: Game, level: Int, location: GridPos) extends Passive with Tower("", "test.png", 1, game, level, location)

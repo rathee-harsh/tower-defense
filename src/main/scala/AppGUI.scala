@@ -15,10 +15,13 @@ import scala.collection.mutable.*
  val WIDTH = 1200
  val HEIGHT = 900
 
-val COLS = 20
-val ROWS = 10
+val COLS = 15
+val ROWS = 7
 
-val gridStep = 0.1
+val GRID_STEP = 0.1
+
+val CANNON_IMAGE_PATH = "assets/cannon.png"
+val COLLECTOR_IMAGE_PATH = "assets/cannon.png"
 
 val testMap = Buffer.fill(COLS)(Buffer.fill(ROWS)("0"))
 
@@ -60,8 +63,8 @@ class mainMap(game: Game) extends Panel:
   end drawMap
 
   private def drawEnemies(g: Graphics2D): Unit =
-    for i <- BigDecimal(0.0) to BigDecimal(COLS.toDouble) by gridStep do
-      for j <- BigDecimal(0.0) to BigDecimal(ROWS.toDouble) by gridStep do
+    for i <- BigDecimal(0.0) to BigDecimal(COLS.toDouble) by GRID_STEP do
+      for j <- BigDecimal(0.0) to BigDecimal(ROWS.toDouble) by GRID_STEP do
         val pos = GridPos(i.toDouble, j.toDouble)
         val enemies = game.getEnemyLocations
         if enemies.keys.toVector.contains(pos) then
@@ -92,22 +95,21 @@ class mainMap(game: Game) extends Panel:
 end mainMap
 
 
-class BottomPanel(towerStatus: Buffer[Int]) extends Panel:
+class BottomPanel(game: Game, towerStatus: Buffer[String]) extends Panel:
   override def paintComponent(g : Graphics2D) =
     g.setColor(Color.gray)
     g.fillRect(0, 0, WIDTH, 60)
 
-    val health = ImageIO.read(new File("assets/health.png"))
-    g.drawImage(health, 5, 5, 30, 30, null)
-    g.setColor(Color.red)
-    g.fillRect(40, 15, 170, 14)
-
     val coins = ImageIO.read(new File("assets/coins.png"))
-    g.drawImage(coins, 5, 30, 35, 35, null)
+    val totalResources = game.resources.toString
+    g.drawImage(coins, 5, 15, 35, 35, null)
     g.setColor(Color.yellow)
-    g.drawString("550", 50, 47)
-    val image = ImageIO.read(new File("assets/lockedItem.png"))
+    g.setFont(new Font("TimesRoman", 3, 18))
+    g.drawString(totalResources, 60, 35)
+
+
     for i <- towerStatus.indices do
+      val image = ImageIO.read(new File(towerStatus(i)))
       g.drawImage(image, 250 + i * 60, 0, 60, 60, null)
 end BottomPanel
 
@@ -128,7 +130,7 @@ object AppGUI extends SimpleSwingApplication:
 
 
 
-  val bottomMenu = new BottomPanel(Buffer.fill(5)(0))
+  val bottomMenu = new BottomPanel(game, Buffer(CANNON_IMAGE_PATH, COLLECTOR_IMAGE_PATH))
   bottomMenu.preferredSize = Dimension(WIDTH, 60)
 
   val mainGame = new mainMap(game)
@@ -157,7 +159,7 @@ object AppGUI extends SimpleSwingApplication:
   def top = this.gameWindow
 
   game.addEnemy(new LandEnemy("Test", "assets/enemy.png", game, 100, 10, GridPos(0, 3)))
-  game.addTower(new Ranged("assets/cannon.png", game, 1, GridPos(10, 4), Direction.North, 15))
+  game.addTower(new Cannon( game, 1, GridPos(10, 4), Direction.North, 15))
 
   val listener = new ActionListener():
       def actionPerformed(e: java.awt.event.ActionEvent) =
@@ -167,8 +169,6 @@ object AppGUI extends SimpleSwingApplication:
         bottomMenu.repaint()
         game.removeUnwantedProjectiles()
   end listener
-
-
 
   val timer = new javax.swing.Timer(200, listener)
   timer.start()

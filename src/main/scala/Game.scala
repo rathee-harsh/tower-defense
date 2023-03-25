@@ -8,12 +8,15 @@ class Game(val worldMap: Buffer[Buffer[String]]):
   val enemies = Map[Int, Enemy]()
 
   val projectiles = Buffer[Projectile]()
-  var totalResources: Double = 0
+  private var totalResources: Int = 0
+  var resourcesToAdd = 0
 
   private var gameWon = false
   private var gameLost = false
 
   val gridMap = createGirdPosMap(this.worldMap)
+
+  def resources = this.totalResources
 
   def addEnemy(enemy: Enemy) =
     this.enemies(enemyCount) = enemy
@@ -38,6 +41,11 @@ class Game(val worldMap: Buffer[Buffer[String]]):
     this.enemies.foreach(_._2.move())
     this.towers.foreach(_._2.takeTurn())
     this.projectiles.foreach(_.move())
+
+    this.projectiles.filter(_.isActive)
+    this.enemies.filter(_._2.isDead)
+
+    this.totalResources += resourcesToAdd
 
   def positionOutOfBounds(location: GridPos) = location.x < 0 || location.x > COLS || location.y < 0 || location.y > ROWS
 
