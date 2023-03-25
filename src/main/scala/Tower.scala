@@ -28,7 +28,7 @@ class Cannon(game: Game, startLevel: Int = 1, startLocation: GridPos, val direct
       this.waitCounter += 1
 end Cannon
 
-class Collector(game: Game, startLevel: Int = 1, startLocation: GridPos) extends Tower(COLLECTOR_IMAGE_PATH, game, startLevel, startLocation):
+class Collector(game: Game, startLevel: Int = 1, startLocation: GridPos, private var miningPower: Int) extends Tower(COLLECTOR_IMAGE_PATH, game, startLevel, startLocation):
   def takeTurn(): Unit =
-    this.game.resourcesToAdd += 10
+    this.game.resourcesToAdd += this.miningPower
 end Collector

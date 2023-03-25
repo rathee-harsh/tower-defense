@@ -86,10 +86,18 @@ class mainMap(game: Game) extends Panel:
       this.drawTopEntities(g, projectile.image, projectile.location)
   end drawProjectiles
 
+  private def drawSelectedTower(g: Graphics2D): Unit =
+    PickedUpTower.tower match
+      case Some(tower) =>
+        this.drawTopEntities(g, tower.image, PickedUpTower.location)
+      case None => ()
+
+
   override def paintComponent(g: Graphics2D): Unit =
     this.drawMap(g)
     this.drawEnemies(g)
     this.drawTowers(g)
+    this.drawSelectedTower(g)
     this.drawProjectiles(g)
   end paintComponent
 
@@ -108,28 +116,17 @@ class BottomPanel(game: Game) extends Panel:
     g.setFont(new Font("TimesRoman", 3, 18))
     g.drawString(totalResources, 60, 35)
 
-//    val buttons = Buffer[Button]()
-//    for i <- towerStatus.indices do
-//      val image = ImageIO.read(new File(towerStatus(i)))
-//      buttons += new Button("") {
-//        icon = new ImageIcon(image)
-//        preferredSize = new Dimension(image.getWidth, image.getHeight)
-//      }
-//
-//    for i <- towerStatus.indices do
-//      val image = ImageIO.read(new File(towerStatus(i)))
-//      g.drawImage(image, 250 + i * 60, 0, 60, 60, null)
 end BottomPanel
 
 
 object AppGUI extends SimpleSwingApplication:
 
-  private def createButtons(imagePath: Buffer[String]) =
+  private def createButtons(towerButtons: Map[String, String]) =
     val buttons = Buffer[Button]()
-    for i <- imagePath do
-      val image = ImageIO.read(new File(i))
+    for (buttonName, imagePath) <- towerButtons do
+      val image = ImageIO.read(new File(imagePath))
       buttons += new Button("") {
-        println(i)
+        this.name = buttonName
         icon = new ImageIcon(image.getScaledInstance(50, 50, 2))
         preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
       }
@@ -145,13 +142,16 @@ object AppGUI extends SimpleSwingApplication:
         testMap(i)(j) = "0"
   end for
 
+  val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
+
   val game = Game(testMap)
+  val buttons = this.createButtons(towerButtons)
 
   val buttonPanel = new FlowPanel
-  buttonPanel.contents ++= this.createButtons(Buffer(CANNON_IMAGE_PATH, COLLECTOR_IMAGE_PATH))
+  buttonPanel.contents ++= this.buttons
 
   val bottomLeft = new BottomPanel(game):
-    preferredSize = new Dimension(100, 400)
+    preferredSize = new Dimension(100, 60)
 
   val bottomMenu = new BorderPanel:
     layout(buttonPanel) = BorderPanel.Position.East
@@ -164,28 +164,61 @@ object AppGUI extends SimpleSwingApplication:
   val topBar = new TopBar(0.5)
   topBar.preferredSize = Dimension(WIDTH, 100)
 
+  println(topBar.preferredSize)
+  println(bottomMenu.preferredSize)
+
   val root = new BorderPanel:
     add(topBar,BorderPanel.Position.North)
     add(mainGame,BorderPanel.Position.Center)
     add(bottomMenu,BorderPanel.Position.South)
     focusable = true
     listenTo(this.keys)
+    listenTo(this.mouse.moves)
+    buttons.foreach( this.listenTo(_) )
     reactions += {
       case KeyPressed(_,  Key.P, _, _) =>
         println("HI")
+      case MouseMoved(_, point, _) =>
+        val x = point.getX
+        val y = point.getY
+        val relativeX = x
+        val relativeY = y - topBar.size.getHeight
+
+        println(this.size.getHeight - bottomMenu.size.getHeight)
+
+        if y > topBar.size.getHeight && y < (this.size.getHeight - bottomMenu.size.getHeight) then
+          PickedUpTower.cursorOnGame = true
+          PickedUpTower.location = GridPos(math.floor(relativeX/this.size.getWidth * COLS), math.floor(relativeY/mainGame.size.getHeight * ROWS))
+          println(PickedUpTower.location)
+        else
+          PickedUpTower.cursorOnGame = false
+//        println("(" + x + ", " +  y + ")")
+      case buttonClicked: ButtonClicked =>
+        buttonClicked.source.name match
+          case "cannon" =>
+            PickedUpTower.tower = Some(new Cannon( game, 1, GridPos(10, 4), Direction.North, 15))
+            println("cannon")
+          case "collector" =>
+            PickedUpTower.tower = Some(new Collector(game, 1, GridPos(10, 4), 15))
+            println("collector")
+          case _ => ()
+
     }
 
   val gameWindow = new MainFrame:
     title = "Level 1"
     contents = root
-    size = new Dimension(WIDTH, HEIGHT)
+    preferredSize = new Dimension(WIDTH, HEIGHT)
     resizable = false
+  this.gameWindow.pack()
+
 
 
   def top = this.gameWindow
 
   game.addEnemy(new LandEnemy("Test", "assets/enemy.png", game, 100, 10, GridPos(0, 3)))
   game.addTower(new Cannon( game, 1, GridPos(10, 4), Direction.North, 15))
+
 
   val listener = new ActionListener():
       def actionPerformed(e: java.awt.event.ActionEvent) =
@@ -200,6 +233,14 @@ object AppGUI extends SimpleSwingApplication:
   timer.start()
 
 end AppGUI
+
+
+object PickedUpTower:
+  var tower: Option[Tower] = None
+  var cursorOnGame = false
+  def toBeDrawn = cursorOnGame && this.tower.isDefined
+  var location = GridPos(0, 0)
+end PickedUpTower
 
 
 
