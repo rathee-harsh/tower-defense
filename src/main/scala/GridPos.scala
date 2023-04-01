@@ -12,6 +12,8 @@ case class GridPos(val x: Double, val y: Double):
       case Direction.West   => moveX(-moveBy)
       case _ => this
 
+  def getDistance(another: GridPos) = math.sqrt(math.hypot(this.x - another.x, this.y - another.y))
+
   override def toString: String = "(" + this.x + ", " + this.y + ")"
   override def equals(another: Any): Boolean  =
     another match

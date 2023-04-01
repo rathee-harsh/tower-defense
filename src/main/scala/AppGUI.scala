@@ -23,8 +23,10 @@ val GRID_STEP = 0.1
 
 val CANNON_IMAGE_PATH = "assets/cannon.png"
 val COLLECTOR_IMAGE_PATH = "assets/cannon.png"
+val BOMBER_IMAGE_PATH = "assets/cannon.png"
 
-val testMap = Buffer.fill(COLS)(Buffer.fill(ROWS)("0"))
+val testMap = FileOperations.loadMap("test.txt")
+
 
 class TopBar(levelProgress: Double) extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
@@ -140,21 +142,9 @@ object AppGUI extends SimpleSwingApplication:
       }
     buttons.toSeq
 
-  for i <- 0 until COLS do
-    for j <- 0 until ROWS do
-      if j == 3 && i != COLS - 1 && i != COLS - 2 then
-        testMap(i)(j) = "2,east"
-      else if j == 2 || j == 4 || (j == 3 && (i == COLS - 1 || i == COLS - 2)) then
-        testMap(i)(j) = "1,placable"
-      else
-        testMap(i)(j) = "0,forest"
-  end for
+  val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
 
-  FileOperations.saveMap(testMap.map(_.toVector).toVector, "test.txt")
-
-  val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
-
-  val game = Game(testMap.map(_.toVector).toVector)
+  val game = Game(testMap)
   val buttons = this.createButtons(towerButtons)
 
   val buttonPanel = new FlowPanel
@@ -214,7 +204,10 @@ object AppGUI extends SimpleSwingApplication:
       case buttonClicked: ButtonClicked =>
         buttonClicked.source.name match
           case "cannon" =>
-            PickedUpTower.tower = Some(new Cannon( game, 1, GridPos(10, 4), Direction.North, 15))
+            PickedUpTower.tower = Some(new Cannon( game, 1, GridPos(10, 4), Direction.North, 10))
+            PickedUpTower.isCollector = false
+          case "bomber" =>
+            PickedUpTower.tower = Some(new Bomber( game, 1, GridPos(10, 4), Direction.North, 25))
             PickedUpTower.isCollector = false
           case "collector" =>
             PickedUpTower.tower = Some(new Collector(game, 1, GridPos(10, 4), 15))
@@ -234,8 +227,7 @@ object AppGUI extends SimpleSwingApplication:
 
   def top = this.gameWindow
 
-  game.addEnemy(new LandEnemy("Test", "assets/enemy.png", game, 100, 10, GridPos(0, 3)))
-  game.addTower(new Cannon( game, 1, GridPos(10, 4), Direction.North, 15))
+  game.addEnemy(new LandEnemy("Test", "assets/enemy.png", game, 10, GridPos(0, 3), 1))
 
 
   val listener = new ActionListener():
@@ -244,7 +236,7 @@ object AppGUI extends SimpleSwingApplication:
         topBar.repaint()
         mainGame.repaint()
         bottomMenu.repaint()
-        game.removeUnwantedProjectiles()
+
   end listener
 
   val timer = new javax.swing.Timer(200, listener)

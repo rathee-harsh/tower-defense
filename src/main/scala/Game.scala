@@ -1,11 +1,13 @@
+import AppGUI.game
+
 import scala.collection.mutable.{Buffer, Map}
 
 class Game(val worldMap: Vector[Vector[String]]):
   var enemyCount = 0
   var towerCount = 0
 
-  val towers = Map[Int, Tower]()
-  val enemies = Map[Int, Enemy]()
+  val towers = Buffer[Tower]()
+  var enemies = Buffer[Enemy]()
 
   val projectiles = Buffer[Projectile]()
   private var totalResources: Int = 0
@@ -20,13 +22,11 @@ class Game(val worldMap: Vector[Vector[String]]):
   def resources = this.totalResources
 
   def addEnemy(enemy: Enemy) =
-    this.enemies(enemyCount) = enemy
-    this.enemyCount += 1
+    this.enemies += enemy 
   end addEnemy
 
   def addTower(tower: Tower) =
-    this.towers(towerCount) = tower
-    this.towerCount += 1
+    this.towers += tower
 
   def upgrade(tower: Tower): Unit =
     tower.upgrade()
@@ -34,19 +34,20 @@ class Game(val worldMap: Vector[Vector[String]]):
   def removeUnwantedProjectiles(): Unit =
     val toRemove = Buffer[Projectile]()
     for projectile <- projectiles do
-      if this.positionOutOfBounds(projectile.location) then
+      if this.positionOutOfBounds(projectile.location) || !projectile.isActive then
         toRemove += projectile
     toRemove.foreach(projectile => this.projectiles -= projectile)
 
   def advance(): Unit =
-    this.enemies.foreach(_._2.move())
-    this.towers.foreach(_._2.takeTurn())
+    this.enemies.foreach(_.move())
+    this.towers.foreach(_.takeTurn())
     this.projectiles.foreach(_.move())
 
-    this.projectiles.filter(_.isActive)
-    this.enemies.filter(_._2.isDead)
+    this.removeUnwantedProjectiles()
+    this.enemies = this.enemies.filterNot(_.isDead)
 
     this.totalResources += resourcesToAdd
+    resourcesToAdd = 0
 
   def positionOutOfBounds(location: GridPos) = location.x < 0 || location.x > COLS || location.y < 0 || location.y > ROWS
 
@@ -57,11 +58,11 @@ class Game(val worldMap: Vector[Vector[String]]):
 
 
 
-  def getEnemyLocations: Map[GridPos, Enemy] =
-    this.enemies.map( (count: Int, enemy: Enemy) => (enemy.location, enemy) )
+  def getEnemyLocations: scala.collection.immutable.Map[GridPos, Enemy] =
+    this.enemies.map( (enemy: Enemy) => (enemy.location, enemy) ).toMap
 
-  def getTowerLocations: Map[GridPos, Tower] =
-    this.towers.map( (count: Int, tower: Tower) => (tower.location, tower) )
+  def getTowerLocations: scala.collection.immutable.Map[GridPos, Tower] =
+    this.towers.map( (tower: Tower) => (tower.location, tower) ).toMap
 
 
 end Game

@@ -23,10 +23,7 @@ object FileOperations:
       println("Error saving. Map corrupted")
     else
       val fileWriter = new FileWriter(new File(FILE_STORAGE_PATH + fileName))
-      val COLS = map.length
-      val ROWS = map.head.length
       var writeString = ""
-      writeString += COLS + " " + ROWS + "\n"
       for i <- 0 until COLS do
         for j <- 0 until ROWS do
           writeString += map(i)(j) + " "
