@@ -22,27 +22,39 @@ object FileOperations:
     if !mapSizedCorrectly then
       println("Error saving. Map corrupted")
     else
-      val fileWriter = new FileWriter(new File(FILE_STORAGE_PATH + fileName))
       var writeString = ""
       for i <- 0 until COLS do
         for j <- 0 until ROWS do
           writeString += map(i)(j) + " "
         writeString += "\n"
       writeString = writeString.dropRight(1)
-      fileWriter.write(writeString)
-      fileWriter.close()
+      fileWrite(writeString, fileName)
   end saveMap
 
   def loadMap(fileName: String): Vector[Vector[String]] =
-    val reader = Source.fromFile(FILE_STORAGE_PATH + fileName)
     val gameMap: Buffer[Buffer[String]] = Buffer()
-    for line <- reader.getLines() do
+    for line <- readFile(fileName) do
       val blocks = line.split(" ")
       val rowBlocks = Buffer[String]()
       for block <- blocks do
         rowBlocks += block
       gameMap += rowBlocks
     gameMap.map(_.toVector).toVector
+
+
+
+  def fileWrite(str: String, fileName: String) =
+    val fileWriter = new FileWriter(new File(FILE_STORAGE_PATH + fileName))
+    fileWriter.write(str)
+    fileWriter.close()
+  end fileWrite
+
+  def readFile(fileName: String): Iterator[String] =
+    val reader = Source.fromFile(FILE_STORAGE_PATH + fileName)
+    val itr = reader.getLines()
+    reader.close()
+    itr
+  end readFile
 
 
 end FileOperations
