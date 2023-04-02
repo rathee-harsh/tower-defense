@@ -14,7 +14,8 @@ trait Enemy(
       this.moveDirection = this.game.gridMap(this.location)
     this.currentLocation = this.currentLocation.moveInDirection(this.moveDirection, this.movementSpeed.toDouble/10)
   def location: GridPos = this.currentLocation
-  def takeDamage(damage: Double) = this.health = math.max(this.health - damage, 0)
+  def takeDamage(damage: Double) =
+    this.health = math.max(this.health - damage, 0)
   def isDead: Boolean = this.health == 0
 end Enemy
 

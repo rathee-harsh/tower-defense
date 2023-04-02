@@ -1,5 +1,6 @@
 object CreateLevel:
   var levelString = ""
+  var totalEnemies = 0
   def addWave(landEnemy: (Int, Int, Int), airEnemy: (Int, Int, Int), timeToNextWave: Int) =
     val (lHP, lSpeed, lCount) = landEnemy
     val (aHP, aSpeed, aCount) = airEnemy
@@ -11,8 +12,11 @@ object CreateLevel:
         this.levelString += s"airEnemy,${aHP},${aSpeed},${aCount}\n"
       this.levelString += "wave end\n"
       this.levelString += timeToNextWave + "\n"
+      this.totalEnemies += lCount
+      this.totalEnemies += aCount
   end addWave
   def finishLevel() =
+    this.levelString = totalEnemies.toString + "\n" + this.levelString
     this.levelString += "end"
 end CreateLevel
 

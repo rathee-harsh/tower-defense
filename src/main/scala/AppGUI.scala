@@ -28,8 +28,9 @@ val BOMBER_IMAGE_PATH = "assets/cannon.png"
 val testMap = FileOperations.loadMap("test.txt")
 
 
-class TopBar(levelProgress: Double) extends Panel:
+class TopBar(game: Game) extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
+    val levelProgress = game.LoadLevel.enemiesDeployed.toDouble/game.LoadLevel.totalEnemies
     val levelBanner = ImageIO.read(new File("assets/level_banner.png"))
     val enemy = ImageIO.read(new File("assets/enemy.png"))
     g.drawImage( levelBanner, 0, 0, WIDTH, 100, null)
@@ -161,7 +162,7 @@ object AppGUI extends SimpleSwingApplication:
 
   val mainGame = new mainMap(game)
 
-  val topBar = new TopBar(0.5)
+  val topBar = new TopBar(game)
   topBar.preferredSize = Dimension(WIDTH, 100)
 
 

@@ -52,7 +52,9 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
     this.projectiles.foreach(_.move())
 
     this.removeUnwantedProjectiles()
+
     this.enemies = this.enemies.filterNot(_.isDead)
+
 
     this.totalResources += resourcesToAdd
     resourcesToAdd = 0
@@ -75,6 +77,10 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
     val reader = Source.fromFile(LEVEL_STORAGE_PATH + level.toString)
     val lines = reader.getLines()
     var game: Option[Game] = None
+    val firstLine = lines.next()
+    if firstLine.toIntOption.isEmpty then throw Exception("File Corrupt")
+    val totalEnemies = firstLine.toInt
+    var enemiesDeployed = 0
     var lastInstruction: String = ""
     var currentEnemiesLeft: Int = 0
     var waveOngoing = false
@@ -96,7 +102,8 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
             case "landEnemy" =>
               addEnemy(new LandEnemy(LAND_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 3), insSplit(2).toInt))
               currentEnemiesLeft -= 1
-            case "airEnemy"  => currentEnemiesLeft -= 1; waitTillNextEnemy = 0
+              enemiesDeployed += 1
+            case "airEnemy"  => currentEnemiesLeft -= 1; waitTillNextEnemy = 0; enemiesDeployed += 1
             case _ => throw Exception("Fille Corrupt")
         else
           waitTillNextEnemy-= 1
@@ -115,7 +122,7 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
         else
           throw Exception("File Corrupt")
         lastInstruction = instruction
-
+    end execute
   end LoadLevel
 
 end Game
