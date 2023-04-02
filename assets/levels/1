@@ -1,0 +1,16 @@
+wave begin
+landEnemy,10,1,10
+airEnemy,5,3,1
+wave end
+20
+wave begin
+landEnemy,15,2,10
+airEnemy,10,3,1
+wave end
+20
+wave begin
+landEnemy,10,3,20
+airEnemy,5,3,3
+wave end
+20
+end

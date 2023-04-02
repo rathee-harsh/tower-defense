@@ -2,7 +2,8 @@ import java.io.{File, FileWriter}
 import scala.collection.mutable.Buffer
 import scala.io.Source
 
-val FILE_STORAGE_PATH = "assets/maps/"
+val MAP_STORAGE_PATH = "assets/maps/"
+val LEVEL_STORAGE_PATH = "assets/levels/"
 val GAME_FILE_IDENTIFIER = "Tower Defence Map-file"
 
 object FileOperations:
@@ -28,33 +29,31 @@ object FileOperations:
           writeString += map(i)(j) + " "
         writeString += "\n"
       writeString = writeString.dropRight(1)
-      fileWrite(writeString, fileName)
+      fileWrite(writeString, fileName, true)
   end saveMap
 
   def loadMap(fileName: String): Vector[Vector[String]] =
     val gameMap: Buffer[Buffer[String]] = Buffer()
-    for line <- readFile(fileName) do
+    val reader = Source.fromFile(MAP_STORAGE_PATH + fileName)
+    for line <- reader.getLines() do
       val blocks = line.split(" ")
       val rowBlocks = Buffer[String]()
       for block <- blocks do
         rowBlocks += block
       gameMap += rowBlocks
+    reader.close()
     gameMap.map(_.toVector).toVector
 
 
 
-  def fileWrite(str: String, fileName: String) =
-    val fileWriter = new FileWriter(new File(FILE_STORAGE_PATH + fileName))
+
+  def fileWrite(str: String, fileName: String, isMap: Boolean) =
+    val storagePath = if isMap then MAP_STORAGE_PATH else LEVEL_STORAGE_PATH
+    val fileWriter = new FileWriter(new File(storagePath + fileName))
     fileWriter.write(str)
     fileWriter.close()
   end fileWrite
 
-  def readFile(fileName: String): Iterator[String] =
-    val reader = Source.fromFile(FILE_STORAGE_PATH + fileName)
-    val itr = reader.getLines()
-    reader.close()
-    itr
-  end readFile
 
 
 end FileOperations

@@ -1,7 +1,5 @@
 trait Enemy(
-      val name: String,
       val image: String,
-      val enemyType: Int,
       val game: Game,
       val maxHP: Double,
       var startLocation: GridPos,
@@ -20,7 +18,7 @@ trait Enemy(
   def isDead: Boolean = this.health == 0
 end Enemy
 
-class LandEnemy(name: String, image: String, game: Game, maxHP: Int, startingLocation: GridPos, movementSpeed: Int)
-  extends Enemy(name, image, 1, game, maxHP, startingLocation, movementSpeed)
+class LandEnemy(image: String, game: Game, maxHP: Int, startingLocation: GridPos, movementSpeed: Int)
+  extends Enemy(image, game, maxHP, startingLocation, movementSpeed)
 
 

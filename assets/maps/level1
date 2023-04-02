@@ -1,10 +1,13 @@
 landEnemy,10,10,10
 airEnemy,5,3,1
+wave end
 20
 landEnemy,15,15,10
 airEnemy,10,3,1
+wave end
 20
 landEnemy,10,10,20
 airEnemy,5,3,3
+wave end
 20
 end

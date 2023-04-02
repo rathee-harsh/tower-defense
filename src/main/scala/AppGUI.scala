@@ -144,7 +144,7 @@ object AppGUI extends SimpleSwingApplication:
 
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
 
-  val game = Game(testMap)
+  val game = Game(1, testMap)
   val buttons = this.createButtons(towerButtons)
 
   val buttonPanel = new FlowPanel
@@ -226,8 +226,6 @@ object AppGUI extends SimpleSwingApplication:
 
 
   def top = this.gameWindow
-
-  game.addEnemy(new LandEnemy("Test", "assets/enemy.png", game, 10, GridPos(0, 3), 1))
 
 
   val listener = new ActionListener():
