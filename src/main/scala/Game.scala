@@ -9,6 +9,9 @@ val AIR_ENEMY_IMAGE = "assets/enenmy.png"
 class Game(level: Int, val worldMap: Vector[Vector[String]]):
   var enemyCount = 0
   var towerCount = 0
+  var isPaused = false
+
+  var enemiesKilled = 0
 
   val towers = Buffer[Tower]()
   var enemies = Buffer[Enemy]()
@@ -19,11 +22,10 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
 
   LoadLevel.game = Some(this)
 
-  private var gameWon = false
-  private var gameLost = false
+  private def gameWon = enemiesKilled == LoadLevel.totalEnemies
+  private def gameLost = this.enemies.exists(_.location.x >= COLS)
 
   val gridMap = createGirdPosMap(this.worldMap)
-  println(gridMap)
 
   def resources = this.totalResources
 
@@ -45,19 +47,20 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
     toRemove.foreach(projectile => this.projectiles -= projectile)
 
   def advance(): Unit =
-    if !LoadLevel.allRead then
-      LoadLevel.execute()
-    this.enemies.foreach(_.move())
-    this.towers.foreach(_.takeTurn())
-    this.projectiles.foreach(_.move())
+    if !this.isPaused && !this.isOver then
+      if !LoadLevel.allRead then
+        LoadLevel.execute()
+      this.enemies.foreach(_.move())
+      this.towers.foreach(_.takeTurn())
+      this.projectiles.foreach(_.move())
 
-    this.removeUnwantedProjectiles()
+      this.removeUnwantedProjectiles()
 
-    this.enemies = this.enemies.filterNot(_.isDead)
+      this.enemies = this.enemies.filterNot(_.isDead)
 
 
-    this.totalResources += resourcesToAdd
-    resourcesToAdd = 0
+      this.totalResources += resourcesToAdd
+      resourcesToAdd = 0
 
   def positionOutOfBounds(location: GridPos) = location.x < 0 || location.x > COLS || location.y < 0 || location.y > ROWS
 
@@ -88,8 +91,6 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
     var allRead = false
     var waitTillNextEnemy = 0
     def execute() =
-      println(waveOngoing)
-      println(waitTillNextWave)
       if !waveOngoing && waitTillNextWave != 0 then
           waitTillNextWave -= 1
       else if waveOngoing && currentEnemiesLeft != 0 then
@@ -108,7 +109,6 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
         else
           waitTillNextEnemy-= 1
       else
-        println("HI")
         val instruction = lines.next()
         if (instruction == "wave begin" && !waveOngoing) || (instruction == "wave end" && waveOngoing) then
           waveOngoing = !waveOngoing

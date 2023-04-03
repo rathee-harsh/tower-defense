@@ -16,6 +16,8 @@ trait Enemy(
   def location: GridPos = this.currentLocation
   def takeDamage(damage: Double) =
     this.health = math.max(this.health - damage, 0)
+    if this.health == 0 then
+      game.enemiesKilled += 1
   def isDead: Boolean = this.health == 0
 end Enemy
 

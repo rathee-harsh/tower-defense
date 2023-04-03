@@ -25,3 +25,16 @@ Overall, these last 2 weeks were quite fun, but I had a finnish exam and a lot o
 all the things I planned. Still, I managed to complete about 90% of the things I needed to do. The workload was about 15 hours.
 I now need to implement the resource collector class and add the functionality of adding towers by mouse click.
 I would then work on creating different levels and maps for the game.
+
+
+INTERIM REPORT 3
+The project has progressed relly nicely, and it is in its last stage now. Levels can be created now which define
+how the enemies are spawned. The player can now select and place towers on the map. The game maps and levels can
+properly be read from and stored to files. The enemy  killing mechanism also works now and the game also stops when
+the player loses(enemies cross the map). Apart from this, the game can also be paused, but I still need to work on
+a pause screen. The workload was about 20 hours, which was a bit less than what I initially expected. I did not find
+any major bugs in the game right now but things like the projectile-enemy collision need some work.
+
+I now have to add a flying type enemy and a tower type that attacks this enemy. I also need to work on making levels
+and selecting good graphics for the game. Apart from this, I need to make some settings to be customizable by the user
+and saving these custom settings in a file.

@@ -11,5 +11,5 @@
 0,forest 0,forest 1,placable 2,east 1,placable 0,forest 0,forest 
 0,forest 0,forest 1,placable 2,east 1,placable 0,forest 0,forest 
 0,forest 0,forest 1,placable 2,east 1,placable 0,forest 0,forest 
-0,forest 0,forest 1,placable 1,placable 1,placable 0,forest 0,forest 
-0,forest 0,forest 1,placable 1,placable 1,placable 0,forest 0,forest 
+0,forest 0,forest 1,placable 2,east 1,placable 0,forest 0,forest
+0,forest 0,forest 1,placable 2,east 1,placable 0,forest 0,forest

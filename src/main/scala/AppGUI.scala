@@ -13,8 +13,8 @@ import scala.collection.mutable.*
 import javax.swing.ImageIcon
 
 
- val WIDTH = 1200
- val HEIGHT = 900
+val WIDTH = 1200
+val HEIGHT = 900
 
 val COLS = 15
 val ROWS = 7
@@ -22,8 +22,8 @@ val ROWS = 7
 val GRID_STEP = 0.1
 
 val CANNON_IMAGE_PATH = "assets/cannon.png"
-val COLLECTOR_IMAGE_PATH = "assets/cannon.png"
-val BOMBER_IMAGE_PATH = "assets/cannon.png"
+val COLLECTOR_IMAGE_PATH = "assets/gold_mine.png"
+val BOMBER_IMAGE_PATH = "assets/bomber.png"
 
 val testMap = FileOperations.loadMap("test.txt")
 
@@ -42,8 +42,18 @@ class TopBar(game: Game) extends Panel:
 end TopBar
 
 
+class PauseScreen(game: Game) extends BorderPanel:
+  override def paintComponent(g: Graphics2D): Unit =
+    g.setPaint(Color.black)
+    g.setFont(new Font("TimesRoman", 3, 35))
+    g.fillRect(0, 0, 500, 500)
+    g.setColor(Color.white)
+    g.drawString("Game Paused", 125, 50)
+end PauseScreen
 
-class mainMap(game: Game) extends Panel:
+
+class mainMap(game: Game) extends FlowPanel:
+
 
   val heightOfSquare = (HEIGHT - 200).toDouble/ROWS
   val widthOfSquare = WIDTH.toDouble/COLS
@@ -96,12 +106,14 @@ class mainMap(game: Game) extends Panel:
       case None => ()
 
 
+
   override def paintComponent(g: Graphics2D): Unit =
-    this.drawMap(g)
-    this.drawEnemies(g)
-    this.drawTowers(g)
-    this.drawSelectedTower(g)
-    this.drawProjectiles(g)
+    if !game.isPaused then
+      this.drawMap(g)
+      this.drawEnemies(g)
+      this.drawTowers(g)
+      this.drawSelectedTower(g)
+      this.drawProjectiles(g)
   end paintComponent
 
 end mainMap
@@ -140,13 +152,16 @@ object AppGUI extends SimpleSwingApplication:
         this.name = buttonName
         icon = new ImageIcon(image.getScaledInstance(50, 50, 2))
         preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
+        focusable = false
       }
     buttons.toSeq
 
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
 
+
   val game = Game(1, testMap)
   val buttons = this.createButtons(towerButtons)
+
 
   val buttonPanel = new FlowPanel
   buttonPanel.contents ++= this.buttons
@@ -159,8 +174,37 @@ object AppGUI extends SimpleSwingApplication:
     layout(bottomLeft) = BorderPanel.Position.West
   bottomMenu.preferredSize = Dimension(WIDTH, 60)
 
+  val topMargin = new FlowPanel:
+    preferredSize = Dimension(500, 225)
+    opaque = false
+
+  val bottomMargin = new FlowPanel:
+    preferredSize = Dimension(500, 225)
+    opaque = false
+
+  val options = new BoxPanel(Orientation.Vertical):
+    maximumSize = Dimension(200, 50)
+    minimumSize = Dimension(200, 50)
+    opaque = false
+    val volume = new Slider():
+        labels = Map(0 -> new Label("0") ,1 -> new Label("1"), 2 -> new Label("2"))
+        opaque = false
+    val difficulty = new Slider():
+      labels = Map(0 -> new Label("Easy"), 1 -> new Label("Moderate"), 2 -> new Label("Hard"))
+      opaque = false
+    val theme = new Slider():
+      opaque = false
+    this.contents ++= Seq(volume, difficulty, theme)
+
+
+  val pauseScreen = new PauseScreen(game):
+    preferredSize = Dimension(500, 500)
+    layout(topMargin) = BorderPanel.Position.North
+    layout(options) = BorderPanel.Position.Center
+    layout(bottomMargin) = BorderPanel.Position.South
 
   val mainGame = new mainMap(game)
+  mainGame.contents ++= Seq(pauseScreen)
 
   val topBar = new TopBar(game)
   topBar.preferredSize = Dimension(WIDTH, 100)
@@ -178,13 +222,14 @@ object AppGUI extends SimpleSwingApplication:
     reactions += {
       case KeyPressed(_,  Key.P, _, _) =>
         println("HI")
-      case MouseMoved(_, point, _) =>
+        game.isPaused = !game.isPaused
+      case MouseMoved(_, point, _) if !game.isPaused =>
         if point.getY > topBar.size.getHeight && point.getY < (this.size.getHeight - bottomMenu.size.getHeight) then
           PickedUpTower.cursorOnGame = true
           PickedUpTower.location = formGridCoordinates(point)
         else
           PickedUpTower.cursorOnGame = false
-      case MouseClicked(component, point, _, _, _) =>
+      case MouseClicked(component, point, _, _, _) if !game.isPaused =>
         if PickedUpTower.tower.isDefined then
           val location = formGridCoordinates(point)
 
@@ -193,7 +238,6 @@ object AppGUI extends SimpleSwingApplication:
               if direction == Direction.Placable && !PickedUpTower.isCollector then
                 PickedUpTower.tower.get.move(location)
                 game.addTower(PickedUpTower.tower.get)
-                println(game.towers)
               else if direction == Direction.Forest && PickedUpTower.isCollector then
                 PickedUpTower.tower.get.move(location)
                 game.addTower(PickedUpTower.tower.get)
@@ -214,7 +258,6 @@ object AppGUI extends SimpleSwingApplication:
             PickedUpTower.tower = Some(new Collector(game, 1, GridPos(10, 4), 15))
             PickedUpTower.isCollector = true
           case _ => ()
-
     }
 
   val gameWindow = new MainFrame:
@@ -224,18 +267,19 @@ object AppGUI extends SimpleSwingApplication:
     resizable = false
   this.gameWindow.pack()
 
-
-
   def top = this.gameWindow
-
 
   val listener = new ActionListener():
       def actionPerformed(e: java.awt.event.ActionEvent) =
-        game.advance()
-        topBar.repaint()
-        mainGame.repaint()
-        bottomMenu.repaint()
-
+        if !game.isPaused then
+          game.advance()
+          topBar.repaint()
+          mainGame.repaint()
+          bottomMenu.repaint()
+          pauseScreen.visible = false
+        else
+          pauseScreen.visible =  true
+          pauseScreen.repaint()
   end listener
 
   val timer = new javax.swing.Timer(200, listener)
@@ -251,7 +295,3 @@ object PickedUpTower:
   var location = GridPos(0, 0)
   var isCollector = false
 end PickedUpTower
-
-
-
-
