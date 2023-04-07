@@ -9,9 +9,11 @@ trait Enemy(
   private var currentLocation = startLocation
   var moveDirection = Direction.East
 
+  def getMoveDirection: Direction
+
   def move(): Unit =
     if this.game.gridMap.contains(this.location) then
-      this.moveDirection = this.game.gridMap(this.location)
+      this.moveDirection = this.getMoveDirection
     this.currentLocation = this.currentLocation.moveInDirection(this.moveDirection, this.movementSpeed.toDouble/10)
   def location: GridPos = this.currentLocation
   def takeDamage(damage: Double) =
@@ -22,6 +24,11 @@ trait Enemy(
 end Enemy
 
 class LandEnemy(image: String, game: Game, maxHP: Int, startingLocation: GridPos, movementSpeed: Int)
-  extends Enemy(image, game, maxHP, startingLocation, movementSpeed)
+  extends Enemy(image, game, maxHP, startingLocation, movementSpeed):
+  def getMoveDirection = this.game.gridMap(this.location)
+
+class AirEnemy(image: String, game: Game, maxHP: Int, startingLocation: GridPos, movementSpeed: Int)
+  extends Enemy(image, game, maxHP, startingLocation, movementSpeed):
+  def getMoveDirection = Direction.East
 
 

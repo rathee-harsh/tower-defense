@@ -4,9 +4,10 @@ import scala.collection.mutable.{Buffer, Map}
 import scala.io.Source
 
 val LAND_ENEMY_IMAGE = "assets/enemy.png"
-val AIR_ENEMY_IMAGE = "assets/enenmy.png"
+val AIR_ENEMY_IMAGE = "assets/airEnemy.png"
 
-class Game(level: Int, val worldMap: Vector[Vector[String]]):
+class Game(level: Int):
+  val worldMap: Vector[Vector[String]] = FileOperations.loadMap("" + level)
   var enemyCount = 0
   var towerCount = 0
   var isPaused = false
@@ -104,7 +105,10 @@ class Game(level: Int, val worldMap: Vector[Vector[String]]):
               addEnemy(new LandEnemy(LAND_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 3), insSplit(2).toInt))
               currentEnemiesLeft -= 1
               enemiesDeployed += 1
-            case "airEnemy"  => currentEnemiesLeft -= 1; waitTillNextEnemy = 0; enemiesDeployed += 1
+            case "airEnemy"  =>
+              addEnemy(new AirEnemy(AIR_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 3), insSplit(2).toInt))
+              currentEnemiesLeft -= 1
+              enemiesDeployed += 1
             case _ => throw Exception("Fille Corrupt")
         else
           waitTillNextEnemy-= 1

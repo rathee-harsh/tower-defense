@@ -24,8 +24,9 @@ val GRID_STEP = 0.1
 val CANNON_IMAGE_PATH = "assets/cannon.png"
 val COLLECTOR_IMAGE_PATH = "assets/gold_mine.png"
 val BOMBER_IMAGE_PATH = "assets/bomber.png"
+val ARCHER_IAMGE_PATH = "assets/archerTower.png"
 
-val testMap = FileOperations.loadMap("test.txt")
+//val testMap = FileOperations.loadMap("test.txt")
 
 
 class TopBar(game: Game) extends Panel:
@@ -42,13 +43,13 @@ class TopBar(game: Game) extends Panel:
 end TopBar
 
 
-class PauseScreen(game: Game) extends BorderPanel:
+class PauseScreen(game: Game, text: String) extends BorderPanel:
   override def paintComponent(g: Graphics2D): Unit =
     g.setPaint(Color.black)
     g.setFont(new Font("TimesRoman", 3, 35))
     g.fillRect(0, 0, 500, 500)
     g.setColor(Color.white)
-    g.drawString("Game Paused", 125, 50)
+    g.drawString(text, 125, 50)
 end PauseScreen
 
 
@@ -72,7 +73,7 @@ class mainMap(game: Game) extends FlowPanel:
     )
     for i <- 0 until COLS do
       for j <- 0 until ROWS do
-        val img = imageMap(testMap(i)(j).split(",")(0).toInt)
+        val img = imageMap(game.worldMap(i)(j).split(",")(0).toInt)
         g.drawImage(img, (i * widthOfSquare).toInt, (j * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
   end drawMap
 
@@ -105,8 +106,6 @@ class mainMap(game: Game) extends FlowPanel:
         this.drawTopEntities(g, tower.image, PickedUpTower.location)
       case None => ()
 
-
-
   override def paintComponent(g: Graphics2D): Unit =
     if !game.isPaused then
       this.drawMap(g)
@@ -136,6 +135,8 @@ end BottomPanel
 
 object AppGUI extends SimpleSwingApplication:
 
+  var level = 1
+
   private def formGridCoordinates(point: Point): GridPos =
     val x = point.getX
     val y = point.getY
@@ -156,10 +157,10 @@ object AppGUI extends SimpleSwingApplication:
       }
     buttons.toSeq
 
-  val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH)
+  val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH, "archer" -> ARCHER_IAMGE_PATH)
 
 
-  val game = Game(1, testMap)
+  var game = Game(level)
   val buttons = this.createButtons(towerButtons)
 
 
@@ -197,11 +198,12 @@ object AppGUI extends SimpleSwingApplication:
     this.contents ++= Seq(volume, difficulty, theme)
 
 
-  val pauseScreen = new PauseScreen(game):
+  val pauseScreen = new PauseScreen(game, "Game Paused"):
     preferredSize = Dimension(500, 500)
     layout(topMargin) = BorderPanel.Position.North
     layout(options) = BorderPanel.Position.Center
     layout(bottomMargin) = BorderPanel.Position.South
+    visible = false
 
   val mainGame = new mainMap(game)
   mainGame.contents ++= Seq(pauseScreen)
@@ -220,16 +222,15 @@ object AppGUI extends SimpleSwingApplication:
     listenTo(this.mouse.clicks)
     buttons.foreach( this.listenTo(_) )
     reactions += {
-      case KeyPressed(_,  Key.P, _, _) =>
-        println("HI")
+      case KeyPressed(_,  Key.P, _, _)  if !game.isOver=>
         game.isPaused = !game.isPaused
-      case MouseMoved(_, point, _) if !game.isPaused =>
+      case MouseMoved(_, point, _) if !game.isPaused && !game.isOver =>
         if point.getY > topBar.size.getHeight && point.getY < (this.size.getHeight - bottomMenu.size.getHeight) then
           PickedUpTower.cursorOnGame = true
           PickedUpTower.location = formGridCoordinates(point)
         else
           PickedUpTower.cursorOnGame = false
-      case MouseClicked(component, point, _, _, _) if !game.isPaused =>
+      case MouseClicked(component, point, _, _, _) if !game.isPaused && !game.isOver =>
         if PickedUpTower.tower.isDefined then
           val location = formGridCoordinates(point)
 
@@ -246,10 +247,13 @@ object AppGUI extends SimpleSwingApplication:
           PickedUpTower.cursorOnGame = false
 
 
-      case buttonClicked: ButtonClicked =>
+      case buttonClicked: ButtonClicked if !game.isPaused && !game.isOver =>
         buttonClicked.source.name match
           case "cannon" =>
             PickedUpTower.tower = Some(new Cannon( game, 1, GridPos(10, 4), Direction.North, 10))
+            PickedUpTower.isCollector = false
+          case "archer" =>
+            PickedUpTower.tower = Some(new Archer( game, 1, GridPos(10, 4), Direction.North, 10))
             PickedUpTower.isCollector = false
           case "bomber" =>
             PickedUpTower.tower = Some(new Bomber( game, 1, GridPos(10, 4), Direction.North, 25))
@@ -280,6 +284,7 @@ object AppGUI extends SimpleSwingApplication:
         else
           pauseScreen.visible =  true
           pauseScreen.repaint()
+
   end listener
 
   val timer = new javax.swing.Timer(200, listener)

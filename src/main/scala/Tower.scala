@@ -30,6 +30,12 @@ class Cannon(game: Game, startLevel: Int = 1, startLocation: GridPos, val direct
       new CannonBall("assets/cannon-ball.png", 10, this.location.moveInDirection(this.directionFacing, 0.5), this.game, this.directionFacing)
 end Cannon
 
+class Archer(game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction, waitBetweenShots: Int)
+  extends Tower(ARCHER_IAMGE_PATH, game, startLevel, startLocation, waitBetweenShots):
+  def action(): Unit =
+    this.game.projectiles +=
+      new Arrow("assets/arrow.png", 10, this.location.moveInDirection(this.directionFacing, 0.5), this.game, this.directionFacing)
+
 class Bomber(game: Game, startLevel: Int = 1, startLocation: GridPos, val directionFacing: Direction, waitBetweenShots: Int) extends Tower(BOMBER_IMAGE_PATH, game, startLevel, startLocation, waitBetweenShots):
   def action(): Unit =
     this.game.projectiles += new Bomb("assets/cannon-ball.png", 10, this.location.moveInDirection(this.directionFacing, 0.6), this.game, this.directionFacing, 1)
