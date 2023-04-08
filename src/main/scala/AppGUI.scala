@@ -1,4 +1,4 @@
-import AppGUI.level
+import AppGUI.{buttons, level, pause}
 
 import scala.swing.*
 import javax.swing.{BorderFactory, BoxLayout, ImageIcon, JFrame, JPanel}
@@ -8,7 +8,7 @@ import java.awt.Graphics
 import java.awt.Dimension
 import javax.imageio.ImageIO
 import scala.collection.mutable.Buffer
-import java.io.File
+import java.io.{File, FileWriter}
 import scala.swing.event.*
 import java.awt.event.*
 import scala.collection.mutable.*
@@ -21,6 +21,11 @@ object AppGUI extends SimpleSwingApplication:
   var gameLevel = Game(level)
   val buttons = this.createButtons(towerButtons)
   var nextLevelStarted = false
+  var gameStarted = false
+
+  def startGame(): Unit =
+    gameStarted = true
+    gameWindow.contents = root
 
   val restart = new Button():
     name = "restart"
@@ -87,6 +92,8 @@ object AppGUI extends SimpleSwingApplication:
     gameOver.visible = false
     nextLevelStarted = true
     gameWindow.contents = root
+    if level == TOTAL_LEVELS then
+      next.visible = false
 
   private def formGridCoordinates(point: Point): GridPos =
     val x = point.getX
@@ -134,6 +141,9 @@ object AppGUI extends SimpleSwingApplication:
   var mainGame= createMainGame
   var bottomMenu = createBottomMenu(buttons.toVector)
 
+  if TOTAL_LEVELS == 1 then
+    next.visible = false
+
   private def newRoot = new BorderPanel:
     add(topBar,BorderPanel.Position.North)
     add(mainGame,BorderPanel.Position.Center)
@@ -142,7 +152,6 @@ object AppGUI extends SimpleSwingApplication:
     listenTo(restart)
     listenTo(next)
     listenTo(exit)
-
     listenTo(this.keys)
     listenTo(this.mouse.moves)
     listenTo(this.mouse.clicks)
@@ -198,11 +207,11 @@ object AppGUI extends SimpleSwingApplication:
   var root = newRoot
 
   var gameWindow = new MainFrame:
-    title = "Level 1"
-    contents = root
+    title = "Tower Defence"
+    contents = startScene
     preferredSize = new Dimension(WIDTH, HEIGHT)
     resizable = false
-  this.gameWindow.pack()
+    pack()
 
   def top = this.gameWindow
 
@@ -218,7 +227,7 @@ object AppGUI extends SimpleSwingApplication:
         else if gameLevel.isPaused then
           pause.visible =  true
           pause.repaint()
-        else
+        else if gameStarted then
           gameLevel.advance()
           topBar.repaint()
           mainGame.repaint()

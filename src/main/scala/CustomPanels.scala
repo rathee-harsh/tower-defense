@@ -40,7 +40,7 @@ class PauseScreen(text: String, margins: Vector[Double]) extends BorderPanel:
     g.setFont(new Font("TimesRoman", 3, 35))
     g.fillRect(0, 0, 500, 500)
     g.setColor(Color.white)
-    g.drawString(text, 125, 50)
+    g.drawString(text, 175 - text.length, 50)
 end PauseScreen
 
 
