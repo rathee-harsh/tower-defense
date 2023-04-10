@@ -19,7 +19,7 @@ object AppGUI extends SimpleSwingApplication:
   var enemeisPassing = 3
   var speed = "slow"
 
-  var level = 2
+  var level = 1
   var exitGame = false
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH, "archer" -> ARCHER_IAMGE_PATH)
   var gameLevel = Game(level, 1)
