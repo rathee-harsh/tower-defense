@@ -14,7 +14,7 @@ trait Enemy(
   def move(): Unit =
     if this.game.gridMap.contains(this.location) then
       this.moveDirection = this.getMoveDirection
-    this.currentLocation = this.currentLocation.moveInDirection(this.moveDirection, this.movementSpeed.toDouble/10)
+    this.currentLocation = this.currentLocation.moveInDirection(this.moveDirection, this.movementSpeed.toDouble/100)
   def location: GridPos = this.currentLocation
   def takeDamage(damage: Double) =
     this.health = math.max(this.health - damage, 0)
@@ -29,6 +29,6 @@ class LandEnemy(image: String, game: Game, maxHP: Int, startingLocation: GridPos
 
 class AirEnemy(image: String, game: Game, maxHP: Int, startingLocation: GridPos, movementSpeed: Int)
   extends Enemy(image, game, maxHP, startingLocation, movementSpeed):
-  def getMoveDirection = Direction.East
+  def getMoveDirection = this.game.gridMap(this.location)
 
 

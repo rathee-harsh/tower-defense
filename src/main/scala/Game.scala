@@ -106,7 +106,7 @@ class Game(level: Int, var enemiesPassings: Int):
               currentEnemiesLeft -= 1
               enemiesDeployed += 1
             case "airEnemy"  =>
-              addEnemy(new AirEnemy(AIR_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 3), insSplit(2).toInt))
+              addEnemy(new AirEnemy(AIR_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 2), insSplit(2).toInt))
               currentEnemiesLeft -= 1
               enemiesDeployed += 1
             case _ => throw Exception("Fille Corrupt")
