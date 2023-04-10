@@ -9,7 +9,6 @@ class Game(level: Int, var enemiesPassings: Int):
   val worldMap: Vector[Vector[String]] = FileOperations.loadMap("" + level)
   var enemyCount = 0
   var towerCount = 0
-  var isPaused = false
 
   var enemiesKilled = 0
 
@@ -49,7 +48,7 @@ class Game(level: Int, var enemiesPassings: Int):
     toRemove.foreach(projectile => this.projectiles -= projectile)
 
   def advance(): Unit =
-    if !this.isPaused && !this.isOver then
+    if !this.isOver then
       if !LoadLevel.allRead then
         LoadLevel.execute()
       this.enemies.foreach(_.move())
@@ -103,7 +102,7 @@ class Game(level: Int, var enemiesPassings: Int):
           waitTillNextEnemy = scala.util.Random.between(5, 20)
           insSplit.head match
             case "landEnemy" =>
-              addEnemy(new LandEnemy(LAND_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 3), insSplit(2).toInt))
+              addEnemy(new LandEnemy(LAND_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 2), insSplit(2).toInt))
               currentEnemiesLeft -= 1
               enemiesDeployed += 1
             case "airEnemy"  =>

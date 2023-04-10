@@ -1,7 +1,7 @@
-0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 
-0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 
-1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 
-2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 2,east 
-1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 1,placable 
-0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 
-0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 
+0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 2,east 2,east 2,south 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 
+1,placable 1,placable 0,forest 0,forest 0,forest 0,forest 2,north 1,placable 2,south 1,placable 0,forest 0,forest 0,forest 0,forest 0,forest 
+2,east 2,east 2,south 1,placable 0,forest 0,forest 2,north 1,placable 2,east 2,east 2,south 0,forest 0,forest 0,forest 0,forest 
+1,placable 1,placable 2,south 1,placable 0,forest 0,forest 2,north 0,forest 0,forest 1,placable 2,east 2,south 1,placable 0,forest 0,forest 
+0,forest 0,forest 2,south 1,placable 0,forest 0,forest 2,north 0,forest 0,forest 0,forest 0,forest 2,east 2,south 0,forest 0,forest 
+0,forest 0,forest 2,east 2,east 2,east 2,east 2,north 0,forest 0,forest 0,forest 0,forest 0,forest 2,east 2,south 0,forest 
+0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 0,forest 2,east 2,east 

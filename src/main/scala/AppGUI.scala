@@ -1,4 +1,3 @@
-import AppGUI.{buttons, level, pause}
 
 import scala.swing.*
 import javax.swing.{BorderFactory, BoxLayout, ImageIcon, JFrame, JPanel}
@@ -67,24 +66,6 @@ object AppGUI extends SimpleSwingApplication:
       preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
       focusable = false
 
-  val pause = new PauseScreen("Game Paused", Vector(45, 45, 20, 20)):
-    val pauseOptions = new BoxPanel(Orientation.Vertical):
-      maximumSize = Dimension(200, 50)
-      minimumSize = Dimension(200, 50)
-      opaque = false
-      val volume = new Slider():
-          labels = Map(0 -> new Label("0") ,1 -> new Label("1"), 2 -> new Label("2"))
-          opaque = false
-      val difficulty = new Slider():
-        labels = Map(0 -> new Label("Easy"), 1 -> new Label("Moderate"), 2 -> new Label("Hard"))
-        opaque = false
-      val theme = new Slider():
-        opaque = false
-      contents ++= Seq(volume, difficulty, theme)
-    preferredSize = Dimension(PAUSE_SCREEN_WIDTH, PAUSE_SCREEN_HEIGHT)
-    layout(pauseOptions) = BorderPanel.Position.Center
-    visible = false
-
   val margin1 = new FlowPanel:
       preferredSize = Dimension(PAUSE_SCREEN_WIDTH, (PAUSE_SCREEN_HEIGHT * 0.05).toInt)
       opaque = false
@@ -104,14 +85,16 @@ object AppGUI extends SimpleSwingApplication:
     visible = false
 
   private def startNewLevel(level: Int): Unit =
-    gameLevel = new Game(level, enemeisPassing)
-    topBar = createTopMenu
-    mainGame = createMainGame
-    bottomMenu = createBottomMenu(buttons.toVector)
-    root = newRoot
-    gameOver.visible = false
-    nextLevelStarted = true
-    gameWindow.contents = root
+    if level <= TOTAL_LEVELS then
+      gameLevel = new Game(level, enemeisPassing)
+      gameLevel.totalResources = startingResources
+      topBar = createTopMenu
+      mainGame = createMainGame
+      bottomMenu = createBottomMenu(buttons.toVector)
+      root = newRoot
+      gameOver.visible = false
+      nextLevelStarted = true
+      gameWindow.contents = root
 
 
   private def formGridCoordinates(point: Point): GridPos =
@@ -157,7 +140,7 @@ object AppGUI extends SimpleSwingApplication:
 
   private def createMainGame =
     new mainMap(gameLevel):
-      contents ++= Seq(pause, gameOver)
+      contents ++= Seq(gameOver)
   end createMainGame
 
   var topBar = createTopMenu
@@ -180,25 +163,23 @@ object AppGUI extends SimpleSwingApplication:
     listenTo(this.mouse.clicks)
     buttons.map(_.contents(1)).foreach( listenTo(_) )
     reactions += {
-      case KeyPressed(_,  Key.P, _, _)  if !gameLevel.isOver =>
-        gameLevel.isPaused = !gameLevel.isPaused
-      case KeyPressed(_, Key.Up, _, _) if !gameLevel.isPaused && PickedUpTower.tower.isDefined =>
+      case KeyPressed(_, Key.Up, _, _) if PickedUpTower.tower.isDefined =>
         PickedUpTower.tower.get.directionFacing = Direction.North
-      case KeyPressed(_, Key.Down, _, _) if !gameLevel.isPaused && PickedUpTower.tower.isDefined =>
+      case KeyPressed(_, Key.Down, _, _) if PickedUpTower.tower.isDefined =>
           PickedUpTower.tower.get.directionFacing = Direction.South
-      case KeyPressed(_, Key.Left, _, _) if !gameLevel.isPaused && PickedUpTower.tower.isDefined =>
+      case KeyPressed(_, Key.Left, _, _) if PickedUpTower.tower.isDefined =>
           PickedUpTower.tower.get.directionFacing = Direction.West
-      case KeyPressed(_, Key.Right, _, _) if !gameLevel.isPaused && PickedUpTower.tower.isDefined =>
+      case KeyPressed(_, Key.Right, _, _) if PickedUpTower.tower.isDefined =>
           PickedUpTower.tower.get.directionFacing = Direction.East
 
-      case MouseMoved(_, point, _) if !gameLevel.isPaused && !gameLevel.isOver =>
+      case MouseMoved(_, point, _) if !gameLevel.isOver =>
         if point.getY > topBar.size.getHeight && point.getY < (this.size.getHeight - bottomMenu.size.getHeight) then
           PickedUpTower.cursorOnGame = true
           PickedUpTower.location = formGridCoordinates(point)
         else
           PickedUpTower.cursorOnGame = false
 
-      case MouseClicked(component, point, _, _, _) if !gameLevel.isPaused && !gameLevel.isOver =>
+      case MouseClicked(component, point, _, _, _) if!gameLevel.isOver =>
         if PickedUpTower.tower.isDefined then
           val location = formGridCoordinates(point)
           gameLevel.gridMap.get(location) match
@@ -215,7 +196,7 @@ object AppGUI extends SimpleSwingApplication:
           PickedUpTower.tower = None
           PickedUpTower.cursorOnGame = false
 
-      case buttonClicked: ButtonClicked if !gameLevel.isPaused =>
+      case buttonClicked: ButtonClicked =>
         buttonClicked.source.name match
           case "cannon" if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("cannon") =>
             PickedUpTower.tower = Some(new Cannon( gameLevel, 1, GridPos(10, 4), Direction.North, 10))
@@ -261,12 +242,8 @@ object AppGUI extends SimpleSwingApplication:
           topBar.repaint()
           mainGame.repaint()
           bottomMenu.repaint()
-          pause.visible = false
         if exitGame then
           gameWindow.dispose()
-        else if nextLevelStarted then
-          root.repaint()
-          nextLevelStarted = false
         else if gameLevel.isOver then
           if gameLevel.gameLost then
               gameOver.text = "Level failed."
@@ -275,14 +252,14 @@ object AppGUI extends SimpleSwingApplication:
           gameOver.repaint()
           if level == TOTAL_LEVELS || gameLevel.gameLost then
             next.visible = false
-            margin1.visible = false
+            margin2.visible = false
           else
             next.visible = true
             margin1.visible = true
           gameOver.visible = true
-        else if gameLevel.isPaused then
-          pause.visible =  true
-          pause.repaint()
+        else if nextLevelStarted then
+          root.repaint()
+          nextLevelStarted = false
         else if gameStarted then
           if speed == "slow" then
             gameSpeedCounter += 1

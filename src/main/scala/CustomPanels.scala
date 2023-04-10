@@ -7,7 +7,7 @@ class TopBar(game: Game) extends Panel:
   override def paintComponent(g: Graphics2D): Unit =
     val levelProgress = game.LoadLevel.enemiesDeployed.toDouble/game.LoadLevel.totalEnemies
     val levelBanner = ImageIO.read(new File("assets/level_banner.png"))
-    val enemy = ImageIO.read(new File("assets/enemy_north.png"))
+    val enemy = ImageIO.read(new File("assets/enemy_south.png"))
     g.drawImage( levelBanner, 0, 0, WIDTH, 100, null)
     g.setPaint(Color.black)
     g.fillRect(10, 30, WIDTH - 20, 10)
@@ -107,12 +107,11 @@ class mainMap(game: Game) extends FlowPanel:
       case None => ()
 
   override def paintComponent(g: Graphics2D): Unit =
-    if !game.isPaused then
-      this.drawMap(g)
-      this.drawEnemies(g)
-      this.drawTowers(g)
-      this.drawSelectedTower(g)
-      this.drawProjectiles(g)
+    this.drawMap(g)
+    this.drawEnemies(g)
+    this.drawTowers(g)
+    this.drawSelectedTower(g)
+    this.drawProjectiles(g)
   end paintComponent
 
 end mainMap
