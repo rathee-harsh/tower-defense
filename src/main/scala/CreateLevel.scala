@@ -26,4 +26,16 @@ end CreateLevel
   CreateLevel.addWave((15, 2, 10), (10, 3, 1), 20)
   CreateLevel.addWave((10, 3, 20), (5, 3, 3), 20)
   CreateLevel.finishLevel()
-  FileOperations.fileWrite(CreateLevel.levelString, "1", false)
+  FileOperations.fileWrite(CreateLevel.levelString, "2", false)
+//  for i <- 0 until ROWS do
+//    for j <- 0 until COLS do
+//      if i == 3  then
+//        testMap(i)(j) = "2,east"
+//      else if i == 2 || i == 4  then
+//        testMap(i)(j) = "1,placable"
+//      else
+//        testMap(i)(j) = "0,forest"
+//  end for
+//  FileOperations.saveMap(testMap.map(_.toVector).toVector, "1")
+
+

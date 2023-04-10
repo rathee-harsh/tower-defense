@@ -8,7 +8,7 @@ val COLS = 15
 val ROWS = 7
 val GRID_STEP = 0.1
 
-val TOTAL_LEVELS = 1
+val TOTAL_LEVELS = 2
 
 val CANNON_IMAGE_PATH = "assets/cannon.png"
 val COLLECTOR_IMAGE_PATH = "assets/gold_mine.png"
@@ -22,3 +22,5 @@ val RUN_IMAGE_PATH = "assets/play.png"
 val INSTRUCTIONS_IMAGE_PATH = "assets/instructions.png"
 
 val SETTINGS = "assets/usr/settings"
+
+val PRICES_MAP = Map("cannon" -> 50, "collector" -> 50, "bomber" -> 75, "archer" -> 75)

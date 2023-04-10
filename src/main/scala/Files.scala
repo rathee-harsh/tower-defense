@@ -24,8 +24,8 @@ object FileOperations:
       println("Error saving. Map corrupted")
     else
       var writeString = ""
-      for i <- 0 until COLS do
-        for j <- 0 until ROWS do
+      for i <- 0 until ROWS do
+        for j <- 0 until COLS do
           writeString += map(i)(j) + " "
         writeString += "\n"
       writeString = writeString.dropRight(1)

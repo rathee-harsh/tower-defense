@@ -1,4 +1,4 @@
-val PROJECTILE_MOVE_SPEED = 0.2
+val PROJECTILE_MOVE_SPEED = 0.1
 
 def enemyInPath(game: Game, startLocation: GridPos, finalLocation: GridPos, moveDirection: Direction): Option[Enemy] =
   var start = startLocation
@@ -34,7 +34,8 @@ class CannonBall(image: String, damage: Int, startingLocation: GridPos, game: Ga
 
 end CannonBall
 
-class Arrow(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Direction) extends Projectile(image, damage, startingLocation, game, dir):
+class Arrow(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Direction) 
+  extends Projectile(image, damage, startingLocation, game, dir):
   def move() =
     val finalLocation = this.location.moveInDirection(dir, PROJECTILE_MOVE_SPEED)
     enemyInPath(game, this.location, finalLocation, this.moveDirection) match

@@ -1,4 +1,3 @@
-import AppGUI.game
 
 import scala.collection.mutable.{Buffer, Map}
 import scala.io.Source
@@ -6,7 +5,7 @@ import scala.io.Source
 val LAND_ENEMY_IMAGE = "assets/enemy.png"
 val AIR_ENEMY_IMAGE = "assets/airEnemy.png"
 
-class Game(level: Int):
+class Game(level: Int, var enemiesPassings: Int):
   val worldMap: Vector[Vector[String]] = FileOperations.loadMap("" + level)
   var enemyCount = 0
   var towerCount = 0
@@ -18,13 +17,15 @@ class Game(level: Int):
   var enemies = Buffer[Enemy]()
 
   val projectiles = Buffer[Projectile]()
-  private var totalResources: Int = 0
+  var totalResources: Int = 0
   var resourcesToAdd = 0
 
   LoadLevel.game = Some(this)
 
-  private def gameWon = enemiesKilled == LoadLevel.totalEnemies
-  private def gameLost = this.enemies.exists(_.location.x >= COLS)
+  def gameWon =
+    val enemiesLeft = LoadLevel.totalEnemies - enemiesKilled
+    (enemiesKilled == LoadLevel.totalEnemies) || ((enemiesLeft == this.enemies.count(_.location.x >= COLS)) && enemiesLeft < enemiesPassings)
+  def gameLost = this.enemies.count(_.location.x >= COLS) >= enemiesPassings
 
   val gridMap = createGirdPosMap(this.worldMap)
 
@@ -135,11 +136,11 @@ end Game
 
 def createGirdPosMap(arrMap: Vector[Vector[String]]) =
   val gridMap = Map[GridPos, Direction]()
-  for i <- 0 until COLS do
-    for j <- 0 until ROWS do
+  for i <- 0 until ROWS do
+    for j <- 0 until COLS do
       val matchString = arrMap(i)(j)
       val matchSplit = matchString.split(",")
-      val pos = GridPos(i, j)
+      val pos = GridPos(j, i)
       if matchSplit.length == 2 then
         gridMap(pos) =  matchSplit(1).toLowerCase match
           case "north"    => Direction.North
