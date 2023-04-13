@@ -36,6 +36,14 @@ object AppGUI extends SimpleSwingApplication:
         case "speed"                      => speed = value
         case "startingResources"          => startingResources = value.toInt
 
+  // Start game after play button on the front page is pressed
+  def startGame(): Unit =
+    setUserSettings()
+    gameLevel.enemiesPassings = enemeisPassing
+    gameLevel.totalResources = startingResources
+    gameStarted = true
+    gameWindow.contents = root
+
   val restart = new Button():
     name = "restart"
     icon = new ImageIcon(ImageIO.read(new File(RESTART_IMAGE_PATH)).getScaledInstance(50, 50, 2))
@@ -65,13 +73,12 @@ object AppGUI extends SimpleSwingApplication:
     opaque = false
   end gameOverOptions
 
-  //Level complete screen
   val gameOver = new PauseScreen("Game Over", Vector(20, 20, 30, 30)):
     preferredSize = Dimension(500, 500)
     layout(gameOverOptions) = BorderPanel.Position.Center
     visible = false
 
-  // starts a level
+  // Start a new level
   private def startNewLevel(level: Int): Unit =
     if level <= TOTAL_LEVELS then
       gameLevel = new Game(level, enemeisPassing)
@@ -84,7 +91,7 @@ object AppGUI extends SimpleSwingApplication:
       nextLevelStarted = true
       gameWindow.contents = root
 
-  // form grid coordinates relative to the main game screen
+  // Form grid coordinated relative to the main game screen
   private def formGridCoordinates(point: Point): GridPos =
     val x = point.getX
     val y = point.getY
@@ -93,7 +100,7 @@ object AppGUI extends SimpleSwingApplication:
     GridPos(math.floor(relativeX/root.size.getWidth * COLS), math.floor(relativeY/mainGame.size.getHeight * ROWS))
   end formGridCoordinates
 
-  // The bottom buttons panel
+  // Bottom buttons panel
   private def createButtonsPanel(towerButtons: Map[String, String]) =
     val buttons = Buffer[BoxPanel]()
     for (buttonName, imagePath) <- towerButtons do
@@ -139,6 +146,7 @@ object AppGUI extends SimpleSwingApplication:
   if TOTAL_LEVELS == 1 then
     next.visible = false
 
+  // new root panel(needed when a new level is started)
   private def newRoot = new BorderPanel:
     add(topBar,BorderPanel.Position.North)
     add(mainGame,BorderPanel.Position.Center)
@@ -284,7 +292,7 @@ object AppGUI extends SimpleSwingApplication:
 
 end AppGUI
 
-
+// Contains info about the tower that is picked up after clicking on the buttons in the bottom menu or pressing any of the keys from 1 to 4
 object PickedUpTower:
   var tower: Option[Tower] = None
   var cost = 0
@@ -293,5 +301,3 @@ object PickedUpTower:
   var location = GridPos(0, 0)
   var isCollector = false
 end PickedUpTower
-
-val testMap = Buffer.fill(ROWS)(Buffer.fill(COLS)("0"))
