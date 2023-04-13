@@ -1,4 +1,3 @@
-
 import scala.swing.*
 import javax.swing.{BorderFactory, BoxLayout, ImageIcon, JFrame, JPanel}
 import java.awt.BorderLayout
@@ -14,13 +13,10 @@ import scala.collection.mutable.*
 import scala.io.Source
 
 object AppGUI extends SimpleSwingApplication:
-
   var startingResources = 75
   var enemeisPassing = 3
   var speed = "slow"
-
   var level = 1
-  var exitGame = false
   val towerButtons = Map[String, String]("cannon" -> CANNON_IMAGE_PATH, "bomber" -> BOMBER_IMAGE_PATH, "collector" -> COLLECTOR_IMAGE_PATH, "archer" -> ARCHER_IAMGE_PATH)
   var gameLevel = Game(level, 1)
   val buttons = this.createButtonsPanel(towerButtons)
@@ -29,6 +25,7 @@ object AppGUI extends SimpleSwingApplication:
 
   var gameSpeedCounter = 0
 
+  // Load user settings from the settings file
   def setUserSettings(): Unit =
     val reader = Source.fromFile(SETTINGS)
     for line <- reader.getLines() do
@@ -39,33 +36,23 @@ object AppGUI extends SimpleSwingApplication:
         case "speed"                      => speed = value
         case "startingResources"          => startingResources = value.toInt
 
-  def startGame(): Unit =
-    setUserSettings()
-    gameLevel.enemiesPassings = enemeisPassing
-    gameLevel.totalResources = startingResources
-    gameStarted = true
-    gameWindow.contents = root
-
   val restart = new Button():
     name = "restart"
     icon = new ImageIcon(ImageIO.read(new File(RESTART_IMAGE_PATH)).getScaledInstance(50, 50, 2))
     preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
     focusable = false
     opaque = false
-
   val next = new Button():
     name = "next"
     icon = new ImageIcon(ImageIO.read(new File(NEXT_IAMGE_PATH)).getScaledInstance(50, 50, 2))
     preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
     focusable = false
     opaque = false
-
   val exit = new Button():
       name = "exit"
       icon = new ImageIcon(ImageIO.read(new File(EXIT_IMAGE_PATH)).getScaledInstance(50, 50, 2))
       preferredSize = new Dimension(icon.getIconWidth, icon.getIconHeight)
       focusable = false
-
   val margin1 = new FlowPanel:
       preferredSize = Dimension(PAUSE_SCREEN_WIDTH, (PAUSE_SCREEN_HEIGHT * 0.05).toInt)
       opaque = false
@@ -78,12 +65,13 @@ object AppGUI extends SimpleSwingApplication:
     opaque = false
   end gameOverOptions
 
-
+  //Level complete screen
   val gameOver = new PauseScreen("Game Over", Vector(20, 20, 30, 30)):
     preferredSize = Dimension(500, 500)
     layout(gameOverOptions) = BorderPanel.Position.Center
     visible = false
 
+  // starts a level
   private def startNewLevel(level: Int): Unit =
     if level <= TOTAL_LEVELS then
       gameLevel = new Game(level, enemeisPassing)
@@ -96,7 +84,7 @@ object AppGUI extends SimpleSwingApplication:
       nextLevelStarted = true
       gameWindow.contents = root
 
-
+  // form grid coordinates relative to the main game screen
   private def formGridCoordinates(point: Point): GridPos =
     val x = point.getX
     val y = point.getY
@@ -105,6 +93,7 @@ object AppGUI extends SimpleSwingApplication:
     GridPos(math.floor(relativeX/root.size.getWidth * COLS), math.floor(relativeY/mainGame.size.getHeight * ROWS))
   end formGridCoordinates
 
+  // The bottom buttons panel
   private def createButtonsPanel(towerButtons: Map[String, String]) =
     val buttons = Buffer[BoxPanel]()
     for (buttonName, imagePath) <- towerButtons do
@@ -164,13 +153,29 @@ object AppGUI extends SimpleSwingApplication:
     buttons.map(_.contents(1)).foreach( listenTo(_) )
     reactions += {
       case KeyPressed(_, Key.Up, _, _) if PickedUpTower.tower.isDefined =>
-        PickedUpTower.tower.get.directionFacing = Direction.North
+        PickedUpTower.tower.get.directionFacing = Tile.North
       case KeyPressed(_, Key.Down, _, _) if PickedUpTower.tower.isDefined =>
-          PickedUpTower.tower.get.directionFacing = Direction.South
+          PickedUpTower.tower.get.directionFacing = Tile.South
       case KeyPressed(_, Key.Left, _, _) if PickedUpTower.tower.isDefined =>
-          PickedUpTower.tower.get.directionFacing = Direction.West
+          PickedUpTower.tower.get.directionFacing = Tile.West
       case KeyPressed(_, Key.Right, _, _) if PickedUpTower.tower.isDefined =>
-          PickedUpTower.tower.get.directionFacing = Direction.East
+          PickedUpTower.tower.get.directionFacing = Tile.East
+      case KeyPressed(_, Key.Key1, _, _) if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("cannon") =>
+            PickedUpTower.tower = Some(new Cannon( gameLevel, GridPos(10, 4), Tile.North, 10))
+            PickedUpTower.isCollector = false
+            PickedUpTower.cost = PRICES_MAP("cannon")
+      case KeyPressed(_, Key.Key4, _, _) if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("archer") =>
+        PickedUpTower.tower = Some(new Archer( gameLevel, GridPos(10, 4), Tile.North, 10))
+        PickedUpTower.cost = PRICES_MAP("archer")
+        PickedUpTower.isCollector = false
+      case KeyPressed(_, Key.Key3, _, _) if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("bomber") =>
+        PickedUpTower.tower = Some(new Bomber( gameLevel, GridPos(10, 4), Tile.North, 25))
+        PickedUpTower.isCollector = false
+        PickedUpTower.cost = PRICES_MAP("bomber")
+      case KeyPressed(_, Key.Key2, _, _) if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("collector") =>
+        PickedUpTower.tower = Some(new Collector(gameLevel, GridPos(10, 4), 15, Tile.East))
+        PickedUpTower.isCollector = true
+        PickedUpTower.cost = PRICES_MAP("collector")
 
       case MouseMoved(_, point, _) if !gameLevel.isOver =>
         if point.getY > topBar.size.getHeight && point.getY < (this.size.getHeight - bottomMenu.size.getHeight) then
@@ -184,11 +189,11 @@ object AppGUI extends SimpleSwingApplication:
           val location = formGridCoordinates(point)
           gameLevel.gridMap.get(location) match
             case Some(direction) if !gameLevel.getTowerLocations.contains(location) =>
-              if direction == Direction.Placable && !PickedUpTower.isCollector then
+              if direction == Tile.Placable && !PickedUpTower.isCollector then
                 PickedUpTower.tower.get.move(location)
                 gameLevel.addTower(PickedUpTower.tower.get)
                 gameLevel.totalResources -= PickedUpTower.cost
-              else if direction == Direction.Forest && PickedUpTower.isCollector then
+              else if direction == Tile.Forest && PickedUpTower.isCollector then
                 PickedUpTower.tower.get.move(location)
                 gameLevel.addTower(PickedUpTower.tower.get)
                 gameLevel.totalResources -= PickedUpTower.cost
@@ -199,19 +204,19 @@ object AppGUI extends SimpleSwingApplication:
       case buttonClicked: ButtonClicked =>
         buttonClicked.source.name match
           case "cannon" if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("cannon") =>
-            PickedUpTower.tower = Some(new Cannon( gameLevel, 1, GridPos(10, 4), Direction.North, 10))
+            PickedUpTower.tower = Some(new Cannon( gameLevel, GridPos(10, 4), Tile.North, 10))
             PickedUpTower.isCollector = false
             PickedUpTower.cost = PRICES_MAP("cannon")
           case "archer" if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("archer") =>
-            PickedUpTower.tower = Some(new Archer( gameLevel, 1, GridPos(10, 4), Direction.North, 10))
+            PickedUpTower.tower = Some(new Archer( gameLevel, GridPos(10, 4), Tile.North, 10))
             PickedUpTower.cost = PRICES_MAP("archer")
             PickedUpTower.isCollector = false
           case "bomber" if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("bomber") =>
-            PickedUpTower.tower = Some(new Bomber( gameLevel, 1, GridPos(10, 4), Direction.North, 25))
+            PickedUpTower.tower = Some(new Bomber( gameLevel, GridPos(10, 4), Tile.North, 25))
             PickedUpTower.isCollector = false
             PickedUpTower.cost = PRICES_MAP("bomber")
           case "collector" if !gameLevel.isOver && gameLevel.totalResources >= PRICES_MAP("collector") =>
-            PickedUpTower.tower = Some(new Collector(gameLevel, 1, GridPos(10, 4), 15, Direction.East))
+            PickedUpTower.tower = Some(new Collector(gameLevel, GridPos(10, 4), 15, Tile.East))
             PickedUpTower.isCollector = true
             PickedUpTower.cost = PRICES_MAP("collector")
           case "restart" =>
@@ -219,7 +224,8 @@ object AppGUI extends SimpleSwingApplication:
           case "next" =>
             level += 1
             startNewLevel(level)
-          case "exit" => exitGame = true
+          case "exit" =>
+            System.exit(0)
           case _ => ()
     }
 
@@ -242,9 +248,7 @@ object AppGUI extends SimpleSwingApplication:
           topBar.repaint()
           mainGame.repaint()
           bottomMenu.repaint()
-        if exitGame then
-          gameWindow.dispose()
-        else if gameLevel.isOver then
+        if gameLevel.isOver then
           if gameLevel.gameLost then
               gameOver.text = "Level failed."
           else
@@ -255,7 +259,7 @@ object AppGUI extends SimpleSwingApplication:
             margin2.visible = false
           else
             next.visible = true
-            margin1.visible = true
+            margin2.visible = true
           gameOver.visible = true
         else if nextLevelStarted then
           root.repaint()
@@ -267,7 +271,7 @@ object AppGUI extends SimpleSwingApplication:
               gameSpeedCounter = 0
             else
               advanceState()
-          else if speed == "medium" then
+          else if speed == "normal" then
             advanceState()
           else if speed == "fast" then
             advanceState()
@@ -291,14 +295,3 @@ object PickedUpTower:
 end PickedUpTower
 
 val testMap = Buffer.fill(ROWS)(Buffer.fill(COLS)("0"))
-
-
-//for i <- 0 until COLS do
-//    for j <- 0 until ROWS do
-//      if j == 3 && i != COLS - 1 && i != COLS - 2 then
-//        testMap(i)(j) = "2,east"
-//      else if j == 2 || j == 4 || (j == 3 && (i == COLS - 1 || i == COLS - 2)) then
-//        testMap(i)(j) = "1,placable"
-//      else
-//        testMap(i)(j) = "0,forest"
-//    end for

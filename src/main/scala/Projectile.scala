@@ -1,48 +1,64 @@
-val PROJECTILE_MOVE_SPEED = 0.1
-
-def enemyInPath(game: Game, startLocation: GridPos, finalLocation: GridPos, moveDirection: Direction): Option[Enemy] =
+// Checks if there is any enemy, Forest or Placable tile between the current location and final location.
+// The function returns a pair where the first element contains the enemy in an Option container if some enemy was there.
+// The second element of the pair is true if there was a forest or placable tile.
+// For enemies, the functions checks if the distance between the location and enemyLocation is less than a certain number
+def blockagesInPath(game: Game, startLocation: GridPos, finalLocation: GridPos, moveDirection: Tile): (Option[Enemy], Boolean) =
   var start = startLocation
   if game.enemies.nonEmpty then
     while start != finalLocation do
-
-      val distances: Map[Enemy, Double] = game.getEnemyLocations.map((location, enemy) => (enemy, location.getDistance(start)))
-      val closest: (Enemy, Double) = distances.minBy((_, distance) => distance)
-      if closest._2 < 0.5 then
-        return Some(closest._1)
+      val distances: Map[Enemy, Double] = game.getEnemyLocations.filter((location, _) => math.abs((location.x - start.x)) <= 1 && math.abs((location.y - start.y)) <= 1)
+        .map((location, enemy) => (enemy, location.getDistance(start)))
+      if distances.nonEmpty then
+        val closest: (Enemy, Double) = distances.minBy((_, distance) => distance)
+        if closest._2 < 0.5 then
+          return (Some(closest._1), false)
+      else if game.gridMap.contains(start) && (game.gridMap(start) == Tile.Forest || game.gridMap(start) == Tile.Placable) then
+        return (None, true)
       start = start.moveInDirection(moveDirection, GRID_STEP)
 
     val distances: Map[Enemy, Double] = game.getEnemyLocations.map((location, enemy) => (enemy, location.getDistance(start)))
       val closest: (Enemy, Double) = distances.minBy((_, distance) => distance)
-      if closest._2 < 0.2 then
-        return Some(closest._1)
-  None
+      if closest._2 < 0.5 then
+        return (Some(closest._1), false)
+      else if game.gridMap.contains(start) && (game.gridMap(start) == Tile.Forest || game.gridMap(start) == Tile.Placable) then
+        return(None, true)
+  (None, false)
 
-trait Projectile(val image: String, val damage: Int, startingLocation: GridPos, val game: Game, val moveDirection: Direction):
+// A projectile
+trait Projectile(val image: String, val damage: Int, startingLocation: GridPos, val game: Game, val moveDirection: Tile):
   var location = startingLocation
-  var isActive: Boolean = true
+  var isActive: Boolean = true // The projectile moves, only if this is true
   def move(): Unit
 end Projectile
 
-class CannonBall(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Direction)
+// Moves if there is nothing in the path.
+// Deals a fixed amount of damage to a land enemy if it finds one
+class CannonBall(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Tile)
   extends Projectile(image, damage, startingLocation, game, dir):
   def move() =
     val finalLocation = this.location.moveInDirection(dir, PROJECTILE_MOVE_SPEED)
-    enemyInPath(game, this.location, finalLocation, this.moveDirection) match
-      case Some(enemy) if enemy.getClass.getName == "LandEnemy" => enemy.takeDamage(this.damage); this.isActive = false
+    blockagesInPath(game, this.location, finalLocation, this.moveDirection) match
+      case (Some(enemy), _) if enemy.getClass.getName == "LandEnemy" => enemy.takeDamage(this.damage); this.isActive = false
+      case (_, true) => this.isActive = false
       case _ => this.location = finalLocation
   end move
 
 end CannonBall
 
-class Arrow(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Direction) 
+// Moves if there is nothing in the path.
+// Deals a fixed amount of damage to an air enemy if it finds one
+class Arrow(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Tile)
   extends Projectile(image, damage, startingLocation, game, dir):
   def move() =
     val finalLocation = this.location.moveInDirection(dir, PROJECTILE_MOVE_SPEED)
-    enemyInPath(game, this.location, finalLocation, this.moveDirection) match
-      case Some(enemy) if enemy.getClass.getName == "AirEnemy" => enemy.takeDamage(this.damage); this.isActive = false
+    blockagesInPath(game, this.location, finalLocation, this.moveDirection) match
+      case (Some(enemy), _) if enemy.getClass.getName == "AirEnemy" => enemy.takeDamage(this.damage); this.isActive = false
+      case (_, true) => this.isActive = false
       case _ => this.location = finalLocation
 
-class Bomb(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Direction, damageArea: Double)
+// Moves till it encounters a path.
+// Explodes on the path, dealing a fixed amount of damage to all enemies that are closer than a certain distance
+class Bomb(image: String, damage: Int, startingLocation: GridPos, game: Game, dir: Tile, damageArea: Double)
   extends Projectile(image, damage, startingLocation, game, dir):
 
   private def landEnemiesInArea: Vector[Enemy] =
@@ -59,7 +75,7 @@ class Bomb(image: String, damage: Int, startingLocation: GridPos, game: Game, di
   def move(): Unit =
     val finalLocation = this.location.moveInDirection(dir, PROJECTILE_MOVE_SPEED)
     val pathLocations: Vector[GridPos] =
-      game.gridMap.filter((_, direction) => direction == Direction.North || direction == Direction.South || direction == Direction.East || direction == Direction.West).map(_._1).toVector
+      game.gridMap.filter((_, direction) => direction == Tile.North || direction == Tile.South || direction == Tile.East || direction == Tile.West).map(_._1).toVector
     val nearest = pathLocations.minBy(_.getDistance(finalLocation))
     if nearest.getDistance(finalLocation) < PROJECTILE_MOVE_SPEED then
       this.location = nearest

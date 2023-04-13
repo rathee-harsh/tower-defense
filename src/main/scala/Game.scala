@@ -1,34 +1,33 @@
-
 import scala.collection.mutable.{Buffer, Map}
 import scala.io.Source
 
-val LAND_ENEMY_IMAGE = "assets/enemy.png"
-val AIR_ENEMY_IMAGE = "assets/airEnemy.png"
-
+// A game object represents a level of the game
+// enemiesPassings is the number of lives or the number of enemies that can cross before the game is over
 class Game(level: Int, var enemiesPassings: Int):
-  val worldMap: Vector[Vector[String]] = FileOperations.loadMap("" + level)
+  val worldMap: Vector[Vector[String]] = FileOperations.loadMap("" + level) // level map loaded from the map-file
   var enemyCount = 0
   var towerCount = 0
-
+  
   var enemiesKilled = 0
 
   val towers = Buffer[Tower]()
   var enemies = Buffer[Enemy]()
-
   val projectiles = Buffer[Projectile]()
-  var totalResources: Int = 0
-  var resourcesToAdd = 0
+  
+  var totalResources: Int = 0 // Total coins
+  var resourcesToAdd = 0 // This gets added to the total resources every single time the game state is updated
+  
+  val gridMap = createGirdPosMap(this.worldMap) //  A 2D grid map having Grid Positions and Tiles
 
   LoadLevel.game = Some(this)
 
+  // True if there are no enemies left or if # lives left > # all enemies that have crossed the map and there are no more enemies
   def gameWon =
     val enemiesLeft = LoadLevel.totalEnemies - enemiesKilled
     (enemiesKilled == LoadLevel.totalEnemies) || ((enemiesLeft == this.enemies.count(_.location.x >= COLS)) && enemiesLeft < enemiesPassings)
+  
+  // If # enemies that have crossed the map >= # total lives
   def gameLost = this.enemies.count(_.location.x >= COLS) >= enemiesPassings
-
-  val gridMap = createGirdPosMap(this.worldMap)
-
-  def resources = this.totalResources
 
   def addEnemy(enemy: Enemy) =
     this.enemies += enemy 
@@ -37,9 +36,7 @@ class Game(level: Int, var enemiesPassings: Int):
   def addTower(tower: Tower) =
     this.towers += tower
 
-  def upgrade(tower: Tower): Unit =
-    tower.upgrade()
-
+  // Remove projectiles that are not active or are out of the map
   def removeUnwantedProjectiles(): Unit =
     val toRemove = Buffer[Projectile]()
     for projectile <- projectiles do
@@ -47,6 +44,7 @@ class Game(level: Int, var enemiesPassings: Int):
         toRemove += projectile
     toRemove.foreach(projectile => this.projectiles -= projectile)
 
+  // Update the game state
   def advance(): Unit =
     if !this.isOver then
       if !LoadLevel.allRead then
@@ -67,16 +65,13 @@ class Game(level: Int, var enemiesPassings: Int):
 
   def isOver: Boolean = this.gameWon || this.gameLost
 
-  def updateTowerLocation(tower: Tower, newLocation: GridPos) =
-    tower.move(newLocation)
-
-
   def getEnemyLocations: scala.collection.immutable.Map[GridPos, Enemy] =
     this.enemies.map( (enemy: Enemy) => (enemy.location, enemy) ).toMap
 
   def getTowerLocations: scala.collection.immutable.Map[GridPos, Tower] =
     this.towers.map( (tower: Tower) => (tower.location, tower) ).toMap
 
+  // Loads a level from the level save file
   object LoadLevel:
     val reader = Source.fromFile(LEVEL_STORAGE_PATH + level.toString)
     val lines = reader.getLines()
@@ -132,9 +127,9 @@ class Game(level: Int, var enemiesPassings: Int):
 end Game
 
 
-
+//  Creates a 2D grid map having Grid Positions and Tiles
 def createGirdPosMap(arrMap: Vector[Vector[String]]) =
-  val gridMap = Map[GridPos, Direction]()
+  val gridMap = Map[GridPos, Tile]()
   for i <- 0 until ROWS do
     for j <- 0 until COLS do
       val matchString = arrMap(i)(j)
@@ -142,12 +137,12 @@ def createGirdPosMap(arrMap: Vector[Vector[String]]) =
       val pos = GridPos(j, i)
       if matchSplit.length == 2 then
         gridMap(pos) =  matchSplit(1).toLowerCase match
-          case "north"    => Direction.North
-          case "east"     => Direction.East
-          case "south"    => Direction.South
-          case "west"     => Direction.West
-          case "forest"   => Direction.Forest
-          case "placable" => Direction.Placable
+          case "north"    => Tile.North
+          case "east"     => Tile.East
+          case "south"    => Tile.South
+          case "west"     => Tile.West
+          case "forest"   => Tile.Forest
+          case "placable" => Tile.Placable
     end for
   end for
   gridMap

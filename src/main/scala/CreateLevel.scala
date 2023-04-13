@@ -1,3 +1,4 @@
+// Levels have different waves. Each wave has land enemies and air enemies and there is a waiting time after each wave.
 object CreateLevel:
   var levelString = ""
   var totalEnemies = 0

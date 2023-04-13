@@ -1,7 +1,7 @@
 29
 wave begin
 landEnemy,10,10,5
-airEnemy,5,5,1
+airEnemy,5,10,1
 wave end
 20
 wave begin
@@ -10,8 +10,8 @@ airEnemy,10,10,3
 wave end
 20
 wave begin
-landEnemy,15,20,10
-airEnemy,10,20,5
+landEnemy,15,10,10
+airEnemy,10,10,5
 wave end
 20
 end

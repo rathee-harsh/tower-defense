@@ -6,8 +6,7 @@ import scala.io.Source
 import scala.swing.{BorderPanel, BoxPanel, Button, ComboBox, FlowPanel, Graphics2D, Label, Orientation}
 import scala.swing.event.ButtonClicked
 
-class SettingsAndInstructions
-
+// Returns a root panel for the starting screen of the game
 def startScene =
   val reader = Source.fromFile(SETTINGS)
     var enemiesPassingValue = 1
@@ -79,6 +78,7 @@ def startScene =
       g.drawImage(image, 0, 0, WIDTH, (0.93 * HEIGHT).toInt, null)
     contents ++= Seq(settings)
 
+  // Write settings to the settings file
   def writeSettings() =
     val options = Vector(enemiesPassingOptions.selection.item, speedOptions.selection.item, themeOptions.selection.item)
     val str = "enemiesPassing:" + options(0) + "\nspeed:" + options(1) + "\nstartingResources:" + options(2)
@@ -86,7 +86,8 @@ def startScene =
     fileWriter.write(str)
     fileWriter.close()
 
-  val root = new BoxPanel(Orientation.Vertical):
+  // The panel to be returned
+  new BoxPanel(Orientation.Vertical):
     contents ++= Seq(topMenu, settingsAndInstructions)
     listenTo(settingsButton)
     listenTo(startButton)
@@ -100,4 +101,4 @@ def startScene =
           writeSettings()
           AppGUI.startGame()
     }
-  root
+end startScene

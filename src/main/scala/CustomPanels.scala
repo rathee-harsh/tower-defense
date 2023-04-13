@@ -50,15 +50,15 @@ class mainMap(game: Game) extends FlowPanel:
   val heightOfSquare = (HEIGHT - 200).toDouble/ROWS
   val widthOfSquare = WIDTH.toDouble/COLS
 
-  private def drawTopEntities(g: Graphics2D, imagePath: String, location: GridPos, direction: Direction) =
+  private def drawTopEntities(g: Graphics2D, imagePath: String, location: GridPos, direction: Tile) =
     val xOff = (location.x * widthOfSquare + widthOfSquare/4).toInt
     val yOff = (location.y * heightOfSquare + heightOfSquare/4).toInt
     val finalImagePath = imagePath.dropRight(4) + "_" +
       (direction match
-        case Direction.North => "north"
-        case Direction.South => "south"
-        case Direction.East  => "east"
-        case Direction.West  => "west") + ".png"
+        case Tile.North => "north"
+        case Tile.South => "south"
+        case Tile.East  => "east"
+        case Tile.West  => "west") + ".png"
     val image = ImageIO.read(new File(finalImagePath))
     g.drawImage(image, xOff, yOff, widthOfSquare.toInt/2, heightOfSquare.toInt/2, null)
 
@@ -71,7 +71,7 @@ class mainMap(game: Game) extends FlowPanel:
     for i <- 0 until ROWS do
       for j <- 0 until COLS do
         var img = imageMap(game.worldMap(i)(j).split(",")(0).toInt)
-        if (game.gridMap(GridPos(j, i)) == Direction.Forest && game.getTowerLocations.keys.toSeq.contains(GridPos(j,i))) then
+        if (game.gridMap(GridPos(j, i)) == Tile.Forest && game.getTowerLocations.keys.toSeq.contains(GridPos(j,i))) then
           img = imageMap(1)
         g.drawImage(img, (j * widthOfSquare).toInt, (i * heightOfSquare).toInt, widthOfSquare.toInt, heightOfSquare.toInt, null)
 
@@ -123,7 +123,7 @@ class BottomPanel(game: Game) extends Panel:
     g.fillRect(0, 0, WIDTH, 60)
 
     val coins = ImageIO.read(new File("assets/coins.png"))
-    val totalResources = game.resources.toString
+    val totalResources = game.totalResources.toString
     g.drawImage(coins, 5, 15, 35, 35, null)
     g.setColor(Color.yellow)
     g.setFont(new Font("TimesRoman", 3, 18))

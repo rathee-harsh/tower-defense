@@ -1,7 +1,7 @@
 53
 wave begin
 landEnemy,10,10,10
-airEnemy,5,5,3
+airEnemy,5,10,3
 wave end
 20
 wave begin

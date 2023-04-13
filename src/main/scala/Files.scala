@@ -2,11 +2,9 @@ import java.io.{File, FileWriter}
 import scala.collection.mutable.Buffer
 import scala.io.Source
 
-val MAP_STORAGE_PATH = "assets/maps/"
-val LEVEL_STORAGE_PATH = "assets/levels/"
-val GAME_FILE_IDENTIFIER = "Tower Defence Map-file"
 
 object FileOperations:
+  // Saves a map to a file
   def saveMap(map: Vector[Vector[String]], fileName: String) =
     def mapSizedCorrectly: Boolean =
       if map.isEmpty then
@@ -32,6 +30,7 @@ object FileOperations:
       fileWrite(writeString, fileName, true)
   end saveMap
 
+  // Loads a map from a file and returns it
   def loadMap(fileName: String): Vector[Vector[String]] =
     val gameMap: Buffer[Buffer[String]] = Buffer()
     val reader = Source.fromFile(MAP_STORAGE_PATH + fileName)
@@ -44,9 +43,7 @@ object FileOperations:
     reader.close()
     gameMap.map(_.toVector).toVector
 
-
-
-
+  // Writes str to 'fileName'. Used for creating maps and levels
   def fileWrite(str: String, fileName: String, isMap: Boolean) =
     val storagePath = if isMap then MAP_STORAGE_PATH else LEVEL_STORAGE_PATH
     val fileWriter = new FileWriter(new File(storagePath + fileName))
