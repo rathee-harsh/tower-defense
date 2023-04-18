@@ -10,7 +10,7 @@ def blockagesInPath(game: Game, startLocation: GridPos, finalLocation: GridPos, 
         .map((location, enemy) => (enemy, location.getDistance(start)))
       if distances.nonEmpty then
         val closest: (Enemy, Double) = distances.minBy((_, distance) => distance)
-        if closest._2 < 0.5 then
+        if closest._2 < 0.25 then
           return (Some(closest._1), false)
       else if game.gridMap.contains(start) && (game.gridMap(start) == Tile.Forest || game.gridMap(start) == Tile.Placable) then
         return (None, true)
@@ -18,7 +18,7 @@ def blockagesInPath(game: Game, startLocation: GridPos, finalLocation: GridPos, 
 
     val distances: Map[Enemy, Double] = game.getEnemyLocations.map((location, enemy) => (enemy, location.getDistance(start)))
       val closest: (Enemy, Double) = distances.minBy((_, distance) => distance)
-      if closest._2 < 0.5 then
+      if closest._2 < 0.25 then
         return (Some(closest._1), false)
       else if game.gridMap.contains(start) && (game.gridMap(start) == Tile.Forest || game.gridMap(start) == Tile.Placable) then
         return(None, true)

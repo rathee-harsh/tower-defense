@@ -40,7 +40,8 @@ class Bomber(game: Game, startLocation: GridPos, dir: Tile, waitBetweenShots: In
   extends Tower(BOMBER_IMAGE_PATH, game, startLocation, waitBetweenShots, dir):
   // Create a new bomb every time the method is called. Area damage. Targets land enemies
   def action(): Unit =
-    this.game.projectiles += new Bomb("assets/bomb.png", 10, this.location.moveInDirection(this.directionFacing, 0.6), this.game, this.directionFacing, 1)
+    this.game.projectiles +=
+      new Bomb("assets/bomb.png", 10, this.location.moveInDirection(this.directionFacing, 0.5), this.game, this.directionFacing, 2)
 end Bomber
 
 

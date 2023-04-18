@@ -14,7 +14,7 @@ case class GridPos(val x: Double, val y: Double):
       case Tile.West   => moveX(-moveBy)
       case _ => this
 
-  def getDistance(another: GridPos) = math.sqrt(math.hypot(this.x - another.x, this.y - another.y))
+  def getDistance(another: GridPos) = math.hypot(this.x - another.x, this.y - another.y)
 
   override def toString: String = "(" + this.x + ", " + this.y + ")"
   

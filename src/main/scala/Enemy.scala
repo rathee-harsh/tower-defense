@@ -25,6 +25,7 @@ trait Enemy(
     this.health = math.max(this.health - damage, 0)
     if this.health == 0 then
       game.enemiesKilled += 1
+      game.counter -= 1
   def isDead: Boolean = this.health == 0
 end Enemy
 

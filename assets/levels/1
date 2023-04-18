@@ -1,5 +1,8 @@
 29
 wave begin
+wave end
+40
+wave begin
 landEnemy,10,10,5
 airEnemy,5,10,1
 wave end

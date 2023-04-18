@@ -13,7 +13,7 @@ import scala.collection.mutable.*
 import scala.io.Source
 
 object AppGUI extends SimpleSwingApplication:
-  var startingResources = 75
+  var startingResources = 150
   var enemeisPassing = 3
   var speed = "slow"
   var level = 1
@@ -262,7 +262,7 @@ object AppGUI extends SimpleSwingApplication:
           else
             gameOver.text = "Level Completed."
           gameOver.repaint()
-          if level == TOTAL_LEVELS || gameLevel.gameLost then
+          if level >= TOTAL_LEVELS || gameLevel.gameLost then
             next.visible = false
             margin2.visible = false
           else

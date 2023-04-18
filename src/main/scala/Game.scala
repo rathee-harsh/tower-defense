@@ -7,16 +7,17 @@ class Game(level: Int, var enemiesPassings: Int):
   val worldMap: Vector[Vector[String]] = FileOperations.loadMap("" + level) // level map loaded from the map-file
   var enemyCount = 0
   var towerCount = 0
-  
+  var counter = 0
+
   var enemiesKilled = 0
 
   val towers = Buffer[Tower]()
   var enemies = Buffer[Enemy]()
   val projectiles = Buffer[Projectile]()
-  
+
   var totalResources: Int = 0 // Total coins
   var resourcesToAdd = 0 // This gets added to the total resources every single time the game state is updated
-  
+
   val gridMap = createGirdPosMap(this.worldMap) //  A 2D grid map having Grid Positions and Tiles
 
   LoadLevel.game = Some(this)
@@ -24,8 +25,8 @@ class Game(level: Int, var enemiesPassings: Int):
   // True if there are no enemies left or if # lives left > # all enemies that have crossed the map and there are no more enemies
   def gameWon =
     val enemiesLeft = LoadLevel.totalEnemies - enemiesKilled
-    (enemiesKilled == LoadLevel.totalEnemies) || ((enemiesLeft == this.enemies.count(_.location.x >= COLS)) && enemiesLeft < enemiesPassings)
-  
+    enemiesLeft <= 0 || ((enemiesLeft == this.enemies.count(_.location.x >= COLS)) && enemiesLeft < enemiesPassings)
+
   // If # enemies that have crossed the map >= # total lives
   def gameLost = this.enemies.count(_.location.x >= COLS) >= enemiesPassings
 
@@ -100,10 +101,12 @@ class Game(level: Int, var enemiesPassings: Int):
               addEnemy(new LandEnemy(LAND_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 2), insSplit(2).toInt))
               currentEnemiesLeft -= 1
               enemiesDeployed += 1
+              counter += 1
             case "airEnemy"  =>
               addEnemy(new AirEnemy(AIR_ENEMY_IMAGE, game.get, insSplit(1).toInt, GridPos(0, 2), insSplit(2).toInt))
               currentEnemiesLeft -= 1
               enemiesDeployed += 1
+              counter += 1
             case _ => throw Exception("Fille Corrupt")
         else
           waitTillNextEnemy-= 1

@@ -38,3 +38,11 @@ any major bugs in the game right now but things like the projectile-enemy collis
 I now have to add a flying type enemy and a tower type that attacks this enemy. I also need to work on making levels
 and selecting good graphics for the game. Apart from this, I need to make some settings to be customizable by the user
 and saving these custom settings in a file.
+
+INTERIM REPORT 4
+The game has now been finished! I added levels, a start screen and some instructions for the player. The are also some settings that the user can
+change. Apart from this, I worked on the game over screen, from where the player can replay the same level or move on to the next one.
+I also updated the graphics, and now the game uses better and low res-images. Some high resolution were causing some lag in the game but this
+is fixed now.
+
+This last phase took about 20 hours and I am finalizing the project now before submitting it.
